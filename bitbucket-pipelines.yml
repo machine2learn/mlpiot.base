@@ -1,0 +1,20 @@
+image: python:3.7-buster
+
+definitions:
+  caches:
+    project-tools: tools
+    tox: .tox
+
+pipelines:
+  default:
+    - step:
+        name: Test using tox
+        caches:
+          - project-tools
+          - pip
+          - tox
+        script:
+          - make python
+          - git diff --exit-code py_src/mlpiot/proto/*_pb2.py || { echo 'run `make python` before commiting' ; exit 1; }
+          - pip install tox
+          - tox

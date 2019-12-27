@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+
+message Event {
+    enum Level {
+        VERBOSE = 0;
+        DEBUG = 1;
+        INFORMATION = 2;
+        WARNING = 3;
+        ERROR = 4;
+        FAILURE = 5;
+    }
+    Level level = 1;
+    int32 code = 2;
+    string scope = 3;
+    string description = 4;
+}

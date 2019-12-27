@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+import "mlpiot/proto/google_timestamp.proto";
+
+
+message Image {
+    int64 cycle_id = 1;
+    Timestamp timestamp = 2;
+    int32 height = 3;
+    int32 width = 4;
+    int32 channels = 5;
+    string url = 6;
+}

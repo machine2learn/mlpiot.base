@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+import "mlpiot/proto/google_timestamp.proto";
+import "mlpiot/proto/event.proto";
+
+
+message ActionExecutorMetadata {
+    string name = 1;
+    int32 version = 2;
+    string payload = 3;
+}
+
+message ActionExecution {
+    int64 cycle_id = 1;
+    Timestamp timestamp = 2;
+    ActionExecutorMetadata metadata = 3;
+    repeated Event action_execution_events = 4;
+}

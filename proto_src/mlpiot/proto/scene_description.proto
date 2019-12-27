@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+import "mlpiot/proto/google_color.proto";
+import "mlpiot/proto/google_geometry.proto";
+import "mlpiot/proto/google_timestamp.proto";
+import "mlpiot/proto/image.proto";
+
+
+message SceneDescriptorMetadata {
+    string name = 1;
+    int32 version = 2;
+    string payload = 3;
+}
+
+message ObjectInScene {
+    string id = 1;
+    string class_name = 2;
+    string class_icon_url = 3;
+    BoundingPoly bounding_box = 4;
+    float confidence = 5;  // 0 - 1
+    float score = 6;
+    Color color = 7;
+}
+
+message SceneDescription {
+    int64 cycle_id = 1;
+    Timestamp timestamp = 2;
+    SceneDescriptorMetadata metadata = 3;
+    repeated ObjectInScene objects = 4;
+    Image annotated_image = 5;
+    int64 input_image_id = 6;
+}

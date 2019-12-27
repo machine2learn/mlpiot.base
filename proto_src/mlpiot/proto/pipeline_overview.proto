@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+import "mlpiot/proto/action_execution.proto";
+import "mlpiot/proto/event.proto";
+import "mlpiot/proto/event_extraction.proto";
+import "mlpiot/proto/google_timestamp.proto";
+import "mlpiot/proto/image.proto";
+import "mlpiot/proto/scene_description.proto";
+
+
+message VisionPipelineManagerMetadata {
+    string name = 1;
+    int32 version = 2;
+    string device_token = 3;
+    string device_hw_model = 4;
+    string device_hw_model_icon_url = 5;
+    string payload = 6;
+}
+
+message VisionPipelineOverview {
+    int64 cycle_id = 1;
+    Timestamp timestamp = 2;
+    VisionPipelineManagerMetadata metadata = 3;
+    Image input_image = 4;
+    SceneDescription scene_description = 5;
+    ExtractedEvents extracted_events = 6;
+    repeated ActionExecution action_executions = 7;
+    repeated Event pipeline_management_events = 8;
+}
