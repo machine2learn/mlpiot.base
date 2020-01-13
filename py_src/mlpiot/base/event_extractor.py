@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 
-from mlpiot.proto.event_extraction_pb2 import (
-    ExtractedEvents, EventExtractorMetadata
-)
+from mlpiot.proto.event_extraction_pb2 import EventExtractorMetadata
 
 
 class EventExtractor(ABC):
@@ -31,11 +29,13 @@ class EventExtractor(ABC):
         metadata = self.prepare()
         assert \
             isinstance(metadata, EventExtractorMetadata), \
-            f"{metadata} returned by prepare is not an instance of EventExtractorMetadata"
+            f"{metadata} returned by prepare is not an instance of" \
+            " EventExtractorMetadata"
         self._state = EventExtractor.__PREPARED
         return metadata
 
-    def lifecycle_extract_events(self, input_scene_description, output_extracted_events):
+    def lifecycle_extract_events(
+            self, input_scene_description, output_extracted_events):
         assert self._state == EventExtractor.__PREPARED
         self.extract_events(input_scene_description, output_extracted_events)
 

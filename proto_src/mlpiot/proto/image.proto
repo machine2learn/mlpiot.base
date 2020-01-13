@@ -11,5 +11,6 @@ message Image {
     int32 height = 3;
     int32 width = 4;
     int32 channels = 5;
-    string url = 6;
+    string url = 6;  // optional
+    bytes data = 7;  // optional
 }

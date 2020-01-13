@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 
-from mlpiot.proto.scene_description_pb2 import (
-    SceneDescription, SceneDescriptorMetadata
-)
+from mlpiot.proto.scene_description_pb2 import SceneDescriptorMetadata
 
 
 class SceneDescriptor(ABC):
@@ -33,7 +31,8 @@ class SceneDescriptor(ABC):
         metadata = self.prepare()
         assert \
             isinstance(metadata, SceneDescriptorMetadata), \
-            f"{metadata} returned by prepare is not an instance of SceneDescriptorMetadata"
+            f"{metadata} returned by prepare is not an instance of" \
+            " SceneDescriptorMetadata"
         self._state = SceneDescriptor.__PREPARED
         return metadata
 
@@ -53,7 +52,8 @@ class SceneDescriptor(ABC):
         self.on_input_size_update()
         self._state = SceneDescriptor.__INPUT_SIZE_SET
 
-    def lifecycle_describe_scene(self, input_np_image, output_scene_description):
+    def lifecycle_describe_scene(
+            self, input_np_image, output_scene_description):
         assert self._state == SceneDescriptor.__INPUT_SIZE_SET
         self.describe_scene(input_np_image, output_scene_description)
 

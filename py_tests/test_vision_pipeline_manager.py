@@ -4,11 +4,19 @@ import unittest
 
 import numpy as np
 
-from mlpiot.base.action_executor import ActionExecutor, ActionExecutorMetadata
-from mlpiot.base.event_extractor import EventExtractor, EventExtractorMetadata
-from mlpiot.base.scene_descriptor import SceneDescriptor, SceneDescriptorMetadata
-from mlpiot.base.vision_pipeline_manager import \
-    VisionPipelineManager, VisionPipelineManagerMetadata, VisionPipelineOverview
+from mlpiot.base.action_executor import (
+    ActionExecutor, ActionExecutorMetadata
+)
+from mlpiot.base.event_extractor import (
+    EventExtractor, EventExtractorMetadata
+)
+from mlpiot.base.scene_descriptor import (
+    SceneDescriptor, SceneDescriptorMetadata
+)
+from mlpiot.base.vision_pipeline_manager import (
+    VisionPipelineManager, VisionPipelineManagerMetadata,
+    VisionPipelineOverview
+)
 from mlpiot.proto.image_pb2 import Image
 
 
@@ -59,7 +67,8 @@ class TestVisionPipelineManager(unittest.TestCase):
         dummy_action_executor = DummyActionExecutor()
 
         vision_pipeline_manager = VisionPipelineManager(
-            dummy_scene_descriptor, dummy_event_extractor, [dummy_action_executor])
+            dummy_scene_descriptor, dummy_event_extractor,
+            [dummy_action_executor])
 
         vision_pipeline_manager.initialize({})
         vpmm = VisionPipelineManagerMetadata()

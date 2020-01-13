@@ -6,19 +6,9 @@ import numpy
 from mlpiot.base.action_executor import ActionExecutor
 from mlpiot.base.event_extractor import EventExtractor
 from mlpiot.base.scene_descriptor import SceneDescriptor
-from mlpiot.proto.google_timestamp_pb2 import Timestamp
 from mlpiot.proto.image_pb2 import Image
-from mlpiot.proto.action_execution_pb2 import (
-    ActionExecution, ActionExecutorMetadata
-)
-from mlpiot.proto.event_extraction_pb2 import (
-    ExtractedEvents, EventExtractorMetadata
-)
-from mlpiot.proto.pipeline_overview_pb2 import (
+from mlpiot.proto.vision_pipeline_management_pb2 import (
     VisionPipelineOverview, VisionPipelineManagerMetadata
-)
-from mlpiot.proto.scene_description_pb2 import (
-    SceneDescription, SceneDescriptorMetadata
 )
 
 _NANOS_PER_MICROSECOND = 1000
@@ -59,7 +49,6 @@ class VisionPipelineManager(object):
         self._metadata = None
         self._state = None
 
-
     def initialize(self, environ):
         self.scene_descriptor.lifecycle_initialize(environ)
         self.event_extractor.lifecycle_initialize(environ)
@@ -74,7 +63,8 @@ class VisionPipelineManager(object):
         assert \
             isinstance(pipeline_manager_metadata,
                        VisionPipelineManagerMetadata), \
-            f"{pipeline_manager_metadata} is not an instance of VisionPipelineManagerMetadata"
+            f"{pipeline_manager_metadata} is not an instance of' \
+            ' VisionPipelineManagerMetadata"
         self._metadata = pipeline_manager_metadata
         self._state = VisionPipelineManager.__METADATA_IS_SET
 
@@ -82,8 +72,10 @@ class VisionPipelineManager(object):
         assert self._state == VisionPipelineManager.__METADATA_IS_SET, \
             "set_metadata() should be called before prepare()"
 
-        self.scene_descriptor_metadata = self.scene_descriptor.lifecycle_prepare()
-        self.event_extractor_metadata = self.event_extractor.lifecycle_prepare()
+        self.scene_descriptor_metadata = \
+            self.scene_descriptor.lifecycle_prepare()
+        self.event_extractor_metadata = \
+            self.event_extractor.lifecycle_prepare()
         self.action_executors_metadata = []
         for action_executor in self.action_executors:
             md = action_executor.lifecycle_prepare()
@@ -94,7 +86,10 @@ class VisionPipelineManager(object):
 
     def run_pipeline(self,
                      input_np_image, input_proto_image,
-                     output_pipeline_overview):
+                     output_vision_pipeline_overview):
+
+        output = output_vision_pipeline_overview
+
         assert self._state == VisionPipelineManager.__PREPARED, \
             "prepare() should be called before run_pipeline()"
         assert \
@@ -104,35 +99,40 @@ class VisionPipelineManager(object):
             isinstance(input_proto_image, Image), \
             f"given {input_proto_image} is not an instance of Image"
         assert \
-            isinstance(output_pipeline_overview, VisionPipelineOverview), \
-            f"given {output_pipeline_overview} is not an instance of VisionPipelineOverview"
+            isinstance(output, VisionPipelineOverview), \
+            f"given {output} is not an instance of VisionPipelineOverview"
 
-        output_pipeline_overview.cycle_id = input_proto_image.cycle_id
-        set_now(output_pipeline_overview.timestamp)
-        output_pipeline_overview.metadata.CopyFrom(self._metadata)
-        output_pipeline_overview.input_image.CopyFrom(input_proto_image)
+        output.cycle_id = input_proto_image.cycle_id
+        set_now(output.timestamp)
+        output.metadata.CopyFrom(self._metadata)
+        output.input_image.CopyFrom(input_proto_image)
 
         self.scene_descriptor.lifecycle_set_input_size(
             input_proto_image.height,
             input_proto_image.width,
             input_proto_image.channels)
 
-        self.scene_descriptor.lifecycle_describe_scene(input_np_image, output_pipeline_overview.scene_description)
-        output_pipeline_overview.scene_description.cycle_id = input_proto_image.cycle_id
-        set_now(output_pipeline_overview.scene_description.timestamp)
-        output_pipeline_overview.scene_description.metadata.CopyFrom(self.scene_descriptor_metadata)
+        self.scene_descriptor.lifecycle_describe_scene(
+            input_np_image, output.scene_description)
+        output.scene_description.cycle_id = input_proto_image.cycle_id
+        set_now(output.scene_description.timestamp)
+        output.scene_description.metadata.CopyFrom(
+            self.scene_descriptor_metadata)
 
         self.event_extractor.lifecycle_extract_events(
-            output_pipeline_overview.scene_description, output_pipeline_overview.extracted_events)
-        output_pipeline_overview.extracted_events.cycle_id = input_proto_image.cycle_id
-        set_now(output_pipeline_overview.extracted_events.timestamp)
-        output_pipeline_overview.extracted_events.metadata.CopyFrom(self.event_extractor_metadata)
+            output.scene_description,
+            output.extracted_events)
+        output.extracted_events.cycle_id = input_proto_image.cycle_id
+        set_now(output.extracted_events.timestamp)
+        output.extracted_events.metadata.CopyFrom(
+            self.event_extractor_metadata)
 
         for i in range(len(self.action_executors)):
-            action_execution = output_pipeline_overview.action_executions.add()
+            action_execution = output.action_executions.add()
             action_executor = self.action_executors[i]
             action_executor.lifecycle_execute_action(
-                output_pipeline_overview.extracted_events, action_execution)
+                output.extracted_events, action_execution)
             action_execution.cycle_id = input_proto_image.cycle_id
             set_now(action_execution.timestamp)
-            action_execution.metadata.CopyFrom(self.action_executors_metadata[i])
+            action_execution.metadata.CopyFrom(
+                self.action_executors_metadata[i])

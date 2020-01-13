@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 
-from mlpiot.proto.action_execution_pb2 import (
-    ActionExecution, ActionExecutorMetadata
-)
+from mlpiot.proto.action_execution_pb2 import ActionExecutorMetadata
 
 
 class ActionExecutor(ABC):
@@ -30,11 +28,13 @@ class ActionExecutor(ABC):
         metadata = self.prepare()
         assert \
             isinstance(metadata, ActionExecutorMetadata), \
-            f"{metadata} returned by prepare is not an instance of ActionExecutorMetadata"
+            f"{metadata} returned by prepare is not an instance of" \
+            " ActionExecutorMetadata"
         self._state = ActionExecutor.__PREPARED
         return metadata
 
-    def lifecycle_execute_action(self, input_extracted_events, output_action_execution):
+    def lifecycle_execute_action(
+            self, input_extracted_events, output_action_execution):
         assert self._state == ActionExecutor.__PREPARED
         self.execute_action(input_extracted_events, output_action_execution)
 
