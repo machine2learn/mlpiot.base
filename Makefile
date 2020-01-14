@@ -7,7 +7,10 @@ PROTO_SOURCEDIR = proto_src
 PROTO_SRCS = $(shell find $(PROTO_SOURCEDIR) -name '*.proto')
 PYTHON_OUT = py_src
 PROTO_PYS  = $(addprefix $(PYTHON_OUT)/,$(PROTO_SRCS:proto_src/%.proto=%_pb2.py))
+PROTO_PYIS  = $(addprefix $(PYTHON_OUT)/,$(PROTO_SRCS:proto_src/%.proto=%_pb2.pyi))
 BUILD_INFO_PY = $(PYTHON_OUT)/mlpiot/proto/_build_info.py
+
+PROTOC_GEN_MYPY := $(shell which protoc-gen-mypy 2>/dev/null)
 
 clean:
 	rm -f *.pyc */*.pyc */*/*.pyc */*/*/*.pyc
@@ -21,8 +24,11 @@ tools/protoc/bin/protoc:
 	unzip tools/protoc.zip -d tools/protoc/
 	rm tools/protoc.zip
 
-$(PROTO_PYS): $(PROTO_SRCS) tools/protoc/bin/protoc
-	tools/protoc/bin/protoc --proto_path=$(PROTO_SOURCEDIR) --python_out=$(PYTHON_OUT) $(PROTO_SRCS)
+$(PROTO_PYS) $(PROTO_PYIS): $(PROTO_SRCS) tools/protoc/bin/protoc
+ifndef PROTOC_GEN_MYPY
+	$(error "protoc-gen-mypy was not found, consider running `pip install mypy-protobuf`")
+endif
+	tools/protoc/bin/protoc --proto_path=$(PROTO_SOURCEDIR) --python_out=$(PYTHON_OUT) --mypy_out=$(PYTHON_OUT) $(PROTO_SRCS)
 
 define BUILD_INFO
 PARENT_GIT_COMMIT = '$(GIT_COMMIT)'

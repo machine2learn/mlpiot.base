@@ -5,6 +5,7 @@ import os.path
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
+
 short_desc = 'Machine Learning Platform for Internet Of Things -- Base classes'
 long_desc = \
     read('README.rst') + '\n\n' + \
