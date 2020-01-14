@@ -27,10 +27,8 @@ class DummySceneDescriptor(SceneDescriptor):
     def prepare(self):
         return SceneDescriptorMetadata()
 
-    def on_input_size_update(self):
-        pass
-
-    def describe_scene(self, input_np_image, output_scene_description):
+    def describe_scene_impl(
+            self, input_np_image, input_proto_image, output_scene_description):
         pass
 
 
@@ -41,7 +39,8 @@ class DummyEventExtractor(EventExtractor):
     def prepare(self):
         return EventExtractorMetadata()
 
-    def extract_events(self, input_scene_description, output_extracted_events):
+    def extract_events_impl(
+            self, input_scene_description, output_extracted_events):
         pass
 
 
@@ -52,7 +51,8 @@ class DummyActionExecutor(ActionExecutor):
     def prepare(self):
         return ActionExecutorMetadata()
 
-    def execute_action(self, input_extracted_events, output_action_execution):
+    def execute_action_impl(
+            self, input_extracted_events, output_action_execution):
         pass
 
 
@@ -62,25 +62,26 @@ class TestVisionPipelineManager(unittest.TestCase):
     def test_smoke(self):
         "A simple test to check if everything is importable"
 
-        dummy_scene_descriptor = DummySceneDescriptor()
-        dummy_event_extractor = DummyEventExtractor()
-        dummy_action_executor = DummyActionExecutor()
+        envs = {}
+
+        dummy_scene_descriptor = DummySceneDescriptor(envs)
+        dummy_event_extractor = DummyEventExtractor(envs)
+        dummy_action_executor = DummyActionExecutor(envs)
 
         vision_pipeline_manager = VisionPipelineManager(
             dummy_scene_descriptor, dummy_event_extractor,
             [dummy_action_executor])
 
-        vision_pipeline_manager.initialize({})
         vpmm = VisionPipelineManagerMetadata()
         vision_pipeline_manager.set_metadata(vpmm)
-        vision_pipeline_manager.prepare()
 
-        input_np_image = np.array([[[1]]])
-        input_proto_image = Image()
-        input_proto_image.cycle_id = 1001
-        input_proto_image.height = 1
-        input_proto_image.width = 1
-        input_proto_image.channels = 1
-        output_pipeline_overview = VisionPipelineOverview()
-        vision_pipeline_manager.run_pipeline(
-            input_np_image, input_proto_image, output_pipeline_overview)
+        with vision_pipeline_manager:
+            input_np_image = np.array([[[1]]])
+            input_proto_image = Image()
+            input_proto_image.cycle_id = 1001
+            input_proto_image.height = 1
+            input_proto_image.width = 1
+            input_proto_image.channels = 1
+            output_pipeline_overview = VisionPipelineOverview()
+            vision_pipeline_manager.run_pipeline(
+                input_np_image, input_proto_image, output_pipeline_overview)

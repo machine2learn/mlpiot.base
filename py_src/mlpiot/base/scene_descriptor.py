@@ -1,9 +1,16 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+import contextlib
 
-from mlpiot.proto.scene_description_pb2 import SceneDescriptorMetadata
+import numpy
+
+from mlpiot.proto.image_pb2 import Image
+from mlpiot.proto.scene_description_pb2 import \
+    SceneDescription, SceneDescriptorMetadata
+
+from .internal.timestamp_utils import set_now
 
 
-class SceneDescriptor(ABC):
+class SceneDescriptor(contextlib.AbstractContextManager):
     """`SceneDescriptor` is a base for vision codes interpreting a given image
     and describing it as a `SceneDescription`.
 
@@ -13,52 +20,45 @@ class SceneDescriptor(ABC):
 
     __INITIALIZED = 0
     __PREPARED = 1
-    __INPUT_SIZE_SET = 2
 
-    def __init__(self):
-        self._input_height = None
-        self._input_width = None
-        self._input_channels = None
-
-    def lifecycle_initialize(self, environ):
-        """Called by a lifecycle manager"""
+    def __init__(self, environ):
+        "Called by a lifecycle manager"
         self.initialize(environ)
         self._state = SceneDescriptor.__INITIALIZED
+        self._metadata = None
 
-    def lifecycle_prepare(self):
-        """Called by a lifecycle manager"""
+    def __enter__(self):
+        "See contextmanager.__enter__()"
         assert self._state == SceneDescriptor.__INITIALIZED
-        metadata = self.prepare()
+        self._metadata = self.prepare()
         assert \
-            isinstance(metadata, SceneDescriptorMetadata), \
-            f"{metadata} returned by prepare is not an instance of" \
+            isinstance(self._metadata, SceneDescriptorMetadata), \
+            f"{self._metadata} returned by prepare is not an instance of" \
             " SceneDescriptorMetadata"
         self._state = SceneDescriptor.__PREPARED
-        return metadata
+        return self
 
-    def lifecycle_set_input_size(self, height, width, channels):
-        """Called by a lifecycle manager"""
-        assert self._state in (
-            SceneDescriptor.__PREPARED,
-            SceneDescriptor.__INPUT_SIZE_SET)
-        if self._state == SceneDescriptor.__INPUT_SIZE_SET and \
-                self._input_height == height and \
-                self._input_width == width and \
-                self._input_channels == channels:
-            return
-        self._input_height = height
-        self._input_width = width
-        self._input_channels = channels
-        self.on_input_size_update()
-        self._state = SceneDescriptor.__INPUT_SIZE_SET
+    def is_prepared(self):
+        return self._state == SceneDescriptor.__PREPARED
 
-    def lifecycle_describe_scene(
-            self, input_np_image, output_scene_description):
-        assert self._state == SceneDescriptor.__INPUT_SIZE_SET
-        self.describe_scene(input_np_image, output_scene_description)
+    def describe_scene(
+            self,
+            input_np_image: numpy.ndarray,
+            input_proto_image: Image,
+            output_scene_description: SceneDescription):
+        "Called by a lifecycle manager"
+        assert self._state == SceneDescriptor.__PREPARED
+        self.describe_scene_impl(
+            input_np_image, input_proto_image, output_scene_description)
+        output_scene_description.metadata.CopyFrom(self._metadata)
+        set_now(output_scene_description.timestamp)
+
+    def __exit__(self, type, value, traceback):
+        "See contextmanager.__exit__(type, value, traceback)"
+        pass
 
     @abstractmethod
-    def initialize(self, environ):
+    def initialize(self, environ) -> None:
         """Initializes the `SceneDescriptor` using the given params.
 
         Validate the given params but if only validating is possible without
@@ -70,7 +70,7 @@ class SceneDescriptor(ABC):
         pass
 
     @abstractmethod
-    def prepare(self):
+    def prepare(self) -> SceneDescriptorMetadata:
         """Loads the internal components and return a `SceneDescriptorMetadata`
 
         Called once after the `SceneDescriptor` is initialized but before
@@ -78,21 +78,16 @@ class SceneDescriptor(ABC):
         pass
 
     @abstractmethod
-    def on_input_size_update(self):
-        """Notifies the `SceneDescriptor` about input size being updated.
-
-        This method is called at least once, after the internal variables
-        regarding input size is set/updated, before starting the main loop. It
-        may be called more than once, for example if the size of an input image
-        is going to be different from the previous one."""
-        pass
-
-    @abstractmethod
-    def describe_scene(self, input_np_image, output_scene_description):
+    def describe_scene_impl(
+            self,
+            input_np_image: numpy.ndarray,
+            input_proto_image: Image,
+            output_scene_description: SceneDescription) -> None:
         """Fills the given `SceneDescription` describing the input.
 
-        input_np_image -- a numpy array with shape
-               (self._input_height, self._input_width, self._input_channels)
+        input_np_image -- image as a numpy array
+        input_proto_image -- image metadata and optionally image content as an
+            mlpiot.proto.image_pb2.Image object
         output_scene_description -- which will be passed to an `EventExtractor`
         """
         pass

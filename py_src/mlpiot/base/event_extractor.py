@@ -1,9 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+import contextlib
 
-from mlpiot.proto.event_extraction_pb2 import EventExtractorMetadata
+from mlpiot.proto.event_extraction_pb2 import \
+    ExtractedEvents, EventExtractorMetadata
+from mlpiot.proto.scene_description_pb2 import SceneDescription
+
+from .internal.timestamp_utils import set_now
 
 
-class EventExtractor(ABC):
+class EventExtractor(contextlib.AbstractContextManager):
     """`EventExtractor` is a base for a decision maker which takes a
     `SceneDescription` and optionally extracts a number of `Event`s from
     the given description.
@@ -15,32 +20,42 @@ class EventExtractor(ABC):
     __INITIALIZED = 0
     __PREPARED = 1
 
-    def __init__(self):
-        pass
-
-    def lifecycle_initialize(self, environ):
-        """Called by a lifecycle manager"""
+    def __init__(self, environ):
+        "Called by a lifecycle manager"
         self.initialize(environ)
         self._state = EventExtractor.__INITIALIZED
+        self._metadata = None
 
-    def lifecycle_prepare(self):
-        """Called by a lifecycle manager"""
+    def __enter__(self):
+        "See contextmanager.__enter__()"
         assert self._state == EventExtractor.__INITIALIZED
-        metadata = self.prepare()
+        self._metadata = self.prepare()
         assert \
-            isinstance(metadata, EventExtractorMetadata), \
-            f"{metadata} returned by prepare is not an instance of" \
+            isinstance(self._metadata, EventExtractorMetadata), \
+            f"{self._metadata} returned by prepare is not an instance of" \
             " EventExtractorMetadata"
         self._state = EventExtractor.__PREPARED
-        return metadata
+        return self
 
-    def lifecycle_extract_events(
-            self, input_scene_description, output_extracted_events):
+    def is_prepared(self):
+        return self._state == EventExtractor.__PREPARED
+
+    def extract_events(
+            self,
+            input_scene_description: SceneDescription,
+            output_extracted_events: ExtractedEvents):
         assert self._state == EventExtractor.__PREPARED
-        self.extract_events(input_scene_description, output_extracted_events)
+        self.extract_events_impl(
+            input_scene_description, output_extracted_events)
+        output_extracted_events.metadata.CopyFrom(self._metadata)
+        set_now(output_extracted_events.timestamp)
+
+    def __exit__(self, type, value, traceback):
+        "See contextmanager.__exit__(type, value, traceback)"
+        pass
 
     @abstractmethod
-    def initialize(self, params):
+    def initialize(self, params) -> None:
         """Initializes the `EventExtractor` using the given params.
 
         Validate the given params but if only validating is possible without
@@ -52,7 +67,7 @@ class EventExtractor(ABC):
         pass
 
     @abstractmethod
-    def prepare(self):
+    def prepare(self) -> EventExtractorMetadata:
         """Loads the internal components and return a `EventExtractorMetadata`
 
         Called once after the `EventExtractor` is initialized but before
@@ -60,7 +75,10 @@ class EventExtractor(ABC):
         pass
 
     @abstractmethod
-    def extract_events(self, input_scene_description, output_extracted_events):
+    def extract_events_impl(
+            self,
+            input_scene_description: SceneDescription,
+            output_extracted_events: ExtractedEvents) -> None:
         """Fills the given `ExtractedEvents` putting events extracted from the
         given `scene_description`.
 

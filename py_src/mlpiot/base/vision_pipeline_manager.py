@@ -1,5 +1,6 @@
-import calendar
-from datetime import datetime
+import contextlib
+import sys
+from typing import Iterable
 
 import numpy
 
@@ -11,24 +12,19 @@ from mlpiot.proto.vision_pipeline_management_pb2 import (
     VisionPipelineOverview, VisionPipelineManagerMetadata
 )
 
-_NANOS_PER_MICROSECOND = 1000
+from .internal.timestamp_utils import set_now
 
 
-def set_now(timestamp):
-    dt = datetime.utcnow()
-    timestamp.seconds = calendar.timegm(dt.utctimetuple())
-    timestamp.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
-
-
-class VisionPipelineManager(object):
+class VisionPipelineManager(contextlib.AbstractContextManager):
     """`VisionPipelineManager`"""
 
     __INITIALIZED = 0
-    __METADATA_IS_SET = 1
-    __PREPARED = 2
+    __PREPARED = 1
 
     def __init__(self,
-                 scene_descriptor, event_extractor, action_executors):
+                 scene_descriptor: SceneDescriptor,
+                 event_extractor: EventExtractor,
+                 action_executors: Iterable[ActionExecutor]):
         assert \
             isinstance(scene_descriptor, SceneDescriptor), \
             f"{scene_descriptor} is not an instance of SceneDescriptor"
@@ -46,52 +42,54 @@ class VisionPipelineManager(object):
                 f"{action_executor} is not an instance of ActionExecutor"
         self.action_executors = tuple(action_executors)
 
-        self._metadata = None
-        self._state = None
-
-    def initialize(self, environ):
-        self.scene_descriptor.lifecycle_initialize(environ)
-        self.event_extractor.lifecycle_initialize(environ)
-        for action_executor in self.action_executors:
-            action_executor.lifecycle_initialize(environ)
-
+        self._metadata = VisionPipelineManagerMetadata()
+        self._metadata.name = VisionPipelineManagerMetadata.__name__
+        self._metadata.version = 1
         self._state = VisionPipelineManager.__INITIALIZED
 
-    def set_metadata(self, pipeline_manager_metadata):
-        assert self._state == VisionPipelineManager.__INITIALIZED, \
-            "initialize() should be called before set_metadata()"
+    def set_metadata(self,
+                     pipeline_manager_metadata: VisionPipelineManagerMetadata):
         assert \
             isinstance(pipeline_manager_metadata,
                        VisionPipelineManagerMetadata), \
             f"{pipeline_manager_metadata} is not an instance of' \
             ' VisionPipelineManagerMetadata"
         self._metadata = pipeline_manager_metadata
-        self._state = VisionPipelineManager.__METADATA_IS_SET
 
-    def prepare(self):
-        assert self._state == VisionPipelineManager.__METADATA_IS_SET, \
-            "set_metadata() should be called before prepare()"
+    def __enter__(self):
+        assert self._state == VisionPipelineManager.__INITIALIZED
 
-        self.scene_descriptor_metadata = \
-            self.scene_descriptor.lifecycle_prepare()
-        self.event_extractor_metadata = \
-            self.event_extractor.lifecycle_prepare()
-        self.action_executors_metadata = []
-        for action_executor in self.action_executors:
-            md = action_executor.lifecycle_prepare()
-            self.action_executors_metadata.append(md)
-        self.action_executors_metadata = tuple(self.action_executors_metadata)
+        for contextmanager in (
+                self.scene_descriptor, self.event_extractor,
+                *self.action_executors):
+            try:
+                contextmanager.__enter__()
+            except Exception:
+                self.__exit__(*sys.exc_info())
 
         self._state = VisionPipelineManager.__PREPARED
 
+    def __exit__(self, type, value, traceback):
+        suppress_exception = False
+        for contextmanager in (
+                self.scene_descriptor, self.event_extractor,
+                *self.action_executors):
+            try:
+                if contextmanager.is_prepared():
+                    suppress_exception = contextmanager.__exit__(
+                        type, value, traceback) or suppress_exception
+            except Exception:
+                pass
+        return suppress_exception
+
     def run_pipeline(self,
-                     input_np_image, input_proto_image,
-                     output_vision_pipeline_overview):
+                     input_np_image: numpy.ndarray,
+                     input_proto_image: Image,
+                     output_vision_pipeline_overview: VisionPipelineOverview):
 
         output = output_vision_pipeline_overview
 
-        assert self._state == VisionPipelineManager.__PREPARED, \
-            "prepare() should be called before run_pipeline()"
+        assert self._state == VisionPipelineManager.__PREPARED
         assert \
             isinstance(input_np_image, numpy.ndarray), \
             f"given {input_np_image} is not an instance of numpy.ndarray"
@@ -107,32 +105,18 @@ class VisionPipelineManager(object):
         output.metadata.CopyFrom(self._metadata)
         output.input_image.CopyFrom(input_proto_image)
 
-        self.scene_descriptor.lifecycle_set_input_size(
-            input_proto_image.height,
-            input_proto_image.width,
-            input_proto_image.channels)
-
-        self.scene_descriptor.lifecycle_describe_scene(
-            input_np_image, output.scene_description)
         output.scene_description.cycle_id = input_proto_image.cycle_id
-        set_now(output.scene_description.timestamp)
-        output.scene_description.metadata.CopyFrom(
-            self.scene_descriptor_metadata)
+        self.scene_descriptor.describe_scene(
+            input_np_image, input_proto_image, output.scene_description)
 
-        self.event_extractor.lifecycle_extract_events(
+        output.extracted_events.cycle_id = input_proto_image.cycle_id
+        self.event_extractor.extract_events(
             output.scene_description,
             output.extracted_events)
-        output.extracted_events.cycle_id = input_proto_image.cycle_id
-        set_now(output.extracted_events.timestamp)
-        output.extracted_events.metadata.CopyFrom(
-            self.event_extractor_metadata)
 
         for i in range(len(self.action_executors)):
             action_execution = output.action_executions.add()
             action_executor = self.action_executors[i]
-            action_executor.lifecycle_execute_action(
+            action_executor.execute_action(
                 output.extracted_events, action_execution)
             action_execution.cycle_id = input_proto_image.cycle_id
-            set_now(action_execution.timestamp)
-            action_execution.metadata.CopyFrom(
-                self.action_executors_metadata[i])
