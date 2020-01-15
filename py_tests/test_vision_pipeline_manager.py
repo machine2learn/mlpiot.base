@@ -21,10 +21,10 @@ from mlpiot.proto.image_pb2 import Image
 
 
 class DummySceneDescriptor(SceneDescriptor):
-    def initialize(self, environ):
+    def initialize_impl(self, environ):
         pass
 
-    def prepare(self):
+    def prepare_impl(self):
         return SceneDescriptorMetadata()
 
     def describe_scene_impl(
@@ -33,10 +33,10 @@ class DummySceneDescriptor(SceneDescriptor):
 
 
 class DummyEventExtractor(EventExtractor):
-    def initialize(self, environ):
+    def initialize_impl(self, environ):
         pass
 
-    def prepare(self):
+    def prepare_impl(self):
         return EventExtractorMetadata()
 
     def extract_events_impl(
@@ -45,10 +45,10 @@ class DummyEventExtractor(EventExtractor):
 
 
 class DummyActionExecutor(ActionExecutor):
-    def initialize(self, environ):
+    def initialize_impl(self, environ):
         pass
 
-    def prepare(self):
+    def prepare_impl(self):
         return ActionExecutorMetadata()
 
     def execute_action_impl(
@@ -62,18 +62,17 @@ class TestVisionPipelineManager(unittest.TestCase):
     def test_smoke(self):
         "A simple test to check if everything is importable"
 
-        envs = {}
-
-        dummy_scene_descriptor = DummySceneDescriptor(envs)
-        dummy_event_extractor = DummyEventExtractor(envs)
-        dummy_action_executor = DummyActionExecutor(envs)
+        dummy_scene_descriptor = DummySceneDescriptor()
+        dummy_event_extractor = DummyEventExtractor()
+        dummy_action_executor = DummyActionExecutor()
 
         vision_pipeline_manager = VisionPipelineManager(
             dummy_scene_descriptor, dummy_event_extractor,
             [dummy_action_executor])
 
         vpmm = VisionPipelineManagerMetadata()
-        vision_pipeline_manager.set_metadata(vpmm)
+        vision_pipeline_manager.initialize(
+            {}, vpmm)
 
         with vision_pipeline_manager:
             input_np_image = np.array([[[1]]])

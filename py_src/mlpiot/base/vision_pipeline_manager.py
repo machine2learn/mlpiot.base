@@ -1,6 +1,6 @@
 import contextlib
 import sys
-from typing import Iterable
+from typing import Dict, Iterable
 
 import numpy
 
@@ -9,17 +9,17 @@ from mlpiot.base.event_extractor import EventExtractor
 from mlpiot.base.scene_descriptor import SceneDescriptor
 from mlpiot.proto.image_pb2 import Image
 from mlpiot.proto.vision_pipeline_management_pb2 import (
-    VisionPipelineOverview, VisionPipelineManagerMetadata
+    VisionPipelineManagerMetadata, VisionPipelineOverview
 )
-
 from .internal.timestamp_utils import set_now
 
 
 class VisionPipelineManager(contextlib.AbstractContextManager):
     """`VisionPipelineManager`"""
 
-    __INITIALIZED = 0
-    __PREPARED = 1
+    __NOT_INITIALIZED = 0
+    __INITIALIZED = 1
+    __PREPARED = 2
 
     def __init__(self,
                  scene_descriptor: SceneDescriptor,
@@ -43,18 +43,27 @@ class VisionPipelineManager(contextlib.AbstractContextManager):
         self.action_executors = tuple(action_executors)
 
         self._metadata = VisionPipelineManagerMetadata()
-        self._metadata.name = VisionPipelineManagerMetadata.__name__
-        self._metadata.version = 1
-        self._state = VisionPipelineManager.__INITIALIZED
+        self._state = VisionPipelineManager.__NOT_INITIALIZED
 
-    def set_metadata(self,
-                     pipeline_manager_metadata: VisionPipelineManagerMetadata):
+    def initialize(
+            self,
+            environ: Dict[str, str],
+            pipeline_manager_metadata: VisionPipelineManagerMetadata):
+
+        assert self._state == VisionPipelineManager.__NOT_INITIALIZED
         assert \
             isinstance(pipeline_manager_metadata,
                        VisionPipelineManagerMetadata), \
             f"{pipeline_manager_metadata} is not an instance of' \
             ' VisionPipelineManagerMetadata"
+
+        self.scene_descriptor.initialize(environ)
+        self.event_extractor.initialize(environ)
+        for action_executor in self.action_executors:
+            action_executor.initialize(environ)
+
         self._metadata = pipeline_manager_metadata
+        self._state = VisionPipelineManager.__INITIALIZED
 
     def __enter__(self):
         assert self._state == VisionPipelineManager.__INITIALIZED

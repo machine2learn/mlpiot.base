@@ -4,7 +4,6 @@ import contextlib
 from mlpiot.proto.action_execution_pb2 import \
     ActionExecution, ActionExecutorMetadata
 from mlpiot.proto.event_extraction_pb2 import ExtractedEvents
-
 from .internal.timestamp_utils import set_now
 
 
@@ -15,23 +14,27 @@ class ActionExecutor(contextlib.AbstractContextManager):
     The lifecycle of an instance of this class will be managed by a pipeline
     manager which is going to initialize it and feed it."""
 
-    __INITIALIZED = 0
-    __PREPARED = 1
+    __NOT_INITIALIZED = 0
+    __INITIALIZED = 1
+    __PREPARED = 2
 
-    def __init__(self, environ):
-        "Called by a lifecycle manager"
-        self.initialize(environ)
+    def __init__(self):
+        self._metadata = ActionExecutorMetadata()
+        self._state = ActionExecutor.__NOT_INITIALIZED
+
+    def initialize(self, environ) -> None:
+        assert self._state == ActionExecutor.__NOT_INITIALIZED
+        self.initialize_impl(environ)
         self._state = ActionExecutor.__INITIALIZED
-        self._metadata = None
 
     def __enter__(self):
         "See contextmanager.__enter__()"
         assert self._state == ActionExecutor.__INITIALIZED
-        self._metadata = self.prepare()
+        self._metadata = self.prepare_impl()
         assert \
             isinstance(self._metadata, ActionExecutorMetadata), \
-            f"{self._metadata} returned by prepare is not an instance of" \
-            " ActionExecutorMetadata"
+            f"{self._metadata} returned by prepare_impl is not an instance" \
+            " of ActionExecutorMetadata"
         self._state = ActionExecutor.__PREPARED
         return self
 
@@ -53,7 +56,7 @@ class ActionExecutor(contextlib.AbstractContextManager):
         pass
 
     @abstractmethod
-    def initialize(self, environ) -> None:
+    def initialize_impl(self, environ) -> None:
         """Initializes the `ActionExecutor` using the given params.
 
         Validate the given params but if only validating is possible without
@@ -62,15 +65,15 @@ class ActionExecutor(contextlib.AbstractContextManager):
 
         environ -- a dictionary from parameter name to its string value.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def prepare(self) -> ActionExecutorMetadata:
+    def prepare_impl(self) -> ActionExecutorMetadata:
         """Loads the internal components and return a `ActionExecutorMetadata`
 
         Called once after the `ActionExecutor` is initialized but before
         starting the loop which calls `extract_events`"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def execute_action_impl(
@@ -85,4 +88,4 @@ class ActionExecutor(contextlib.AbstractContextManager):
         input_extracted_events -- an `ExtractedEvents` instance
         output_action_execution -- logs of the executed action
         """
-        pass
+        raise NotImplementedError
