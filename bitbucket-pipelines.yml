@@ -14,7 +14,7 @@ pipelines:
           - pip
           - tox
         script:
+          - pip install mypy-protobuf tox
           - make python
-          - git diff --exit-code py_src/mlpiot/proto/*_pb2.py || { echo 'run `make python` before commiting' ; exit 1; }
-          - pip install tox
+          - git diff --exit-code py_src/mlpiot/proto/*_pb2.py* || { echo 'run `make python` before commiting' ; exit 1; }
           - tox
