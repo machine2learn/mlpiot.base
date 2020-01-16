@@ -1,4 +1,5 @@
 import contextlib
+from enum import Enum, unique
 import sys
 from typing import Dict, Iterable
 
@@ -17,9 +18,11 @@ from .internal.timestamp_utils import set_now
 class VisionPipelineManager(contextlib.AbstractContextManager):
     """`VisionPipelineManager`"""
 
-    __NOT_INITIALIZED = 0
-    __INITIALIZED = 1
-    __PREPARED = 2
+    @unique
+    class _State(Enum):
+        NOT_INITIALIZED = 0
+        INITIALIZED = 1
+        PREPARED = 2
 
     def __init__(self,
                  scene_descriptor: SceneDescriptor,
@@ -43,14 +46,14 @@ class VisionPipelineManager(contextlib.AbstractContextManager):
         self.action_executors = tuple(action_executors)
 
         self._metadata = VisionPipelineManagerMetadata()
-        self._state = VisionPipelineManager.__NOT_INITIALIZED
+        self._state = VisionPipelineManager._State.NOT_INITIALIZED
 
     def initialize(
             self,
             environ: Dict[str, str],
             pipeline_manager_metadata: VisionPipelineManagerMetadata):
 
-        assert self._state == VisionPipelineManager.__NOT_INITIALIZED
+        assert self._state is VisionPipelineManager._State.NOT_INITIALIZED
         assert \
             isinstance(pipeline_manager_metadata,
                        VisionPipelineManagerMetadata), \
@@ -63,10 +66,10 @@ class VisionPipelineManager(contextlib.AbstractContextManager):
             action_executor.initialize(environ)
 
         self._metadata = pipeline_manager_metadata
-        self._state = VisionPipelineManager.__INITIALIZED
+        self._state = VisionPipelineManager._State.INITIALIZED
 
     def __enter__(self):
-        assert self._state == VisionPipelineManager.__INITIALIZED
+        assert self._state is VisionPipelineManager._State.INITIALIZED
 
         for contextmanager in (
                 self.scene_descriptor, self.event_extractor,
@@ -76,7 +79,7 @@ class VisionPipelineManager(contextlib.AbstractContextManager):
             except Exception:
                 self.__exit__(*sys.exc_info())
 
-        self._state = VisionPipelineManager.__PREPARED
+        self._state = VisionPipelineManager._State.PREPARED
 
     def __exit__(self, type, value, traceback):
         suppress_exception = False
@@ -98,7 +101,7 @@ class VisionPipelineManager(contextlib.AbstractContextManager):
 
         output = output_vision_pipeline_overview
 
-        assert self._state == VisionPipelineManager.__PREPARED
+        assert self._state is VisionPipelineManager._State.PREPARED
         assert \
             isinstance(input_np_image, numpy.ndarray), \
             f"given {input_np_image} is not an instance of numpy.ndarray"

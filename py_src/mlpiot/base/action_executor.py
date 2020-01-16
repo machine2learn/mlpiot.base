@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import contextlib
+from enum import Enum, unique
 
 from mlpiot.proto.action_execution_pb2 import \
     ActionExecution, ActionExecutorMetadata
@@ -14,38 +15,40 @@ class ActionExecutor(contextlib.AbstractContextManager):
     The lifecycle of an instance of this class will be managed by a pipeline
     manager which is going to initialize it and feed it."""
 
-    __NOT_INITIALIZED = 0
-    __INITIALIZED = 1
-    __PREPARED = 2
+    @unique
+    class _State(Enum):
+        NOT_INITIALIZED = 0
+        INITIALIZED = 1
+        PREPARED = 2
 
     def __init__(self):
         self._metadata = ActionExecutorMetadata()
-        self._state = ActionExecutor.__NOT_INITIALIZED
+        self._state = ActionExecutor._State.NOT_INITIALIZED
 
     def initialize(self, environ) -> None:
-        assert self._state == ActionExecutor.__NOT_INITIALIZED
+        assert self._state is ActionExecutor._State.NOT_INITIALIZED
         self.initialize_impl(environ)
-        self._state = ActionExecutor.__INITIALIZED
+        self._state = ActionExecutor._State.INITIALIZED
 
     def __enter__(self):
         "See contextmanager.__enter__()"
-        assert self._state == ActionExecutor.__INITIALIZED
+        assert self._state is ActionExecutor._State.INITIALIZED
         self._metadata = self.prepare_impl()
         assert \
             isinstance(self._metadata, ActionExecutorMetadata), \
             f"{self._metadata} returned by prepare_impl is not an instance" \
             " of ActionExecutorMetadata"
-        self._state = ActionExecutor.__PREPARED
+        self._state = ActionExecutor._State.PREPARED
         return self
 
     def is_prepared(self):
-        return self._state == ActionExecutor.__PREPARED
+        return self._state == ActionExecutor._State.PREPARED
 
     def execute_action(
             self,
             input_extracted_events: ExtractedEvents,
             output_action_execution: ActionExecution):
-        assert self._state == ActionExecutor.__PREPARED
+        assert self._state is ActionExecutor._State.PREPARED
         self.execute_action_impl(
             input_extracted_events, output_action_execution)
         output_action_execution.metadata.CopyFrom(self._metadata)

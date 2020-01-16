@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import contextlib
+from enum import Enum, unique
 
 from mlpiot.proto.event_extraction_pb2 import \
     EventExtractorMetadata, ExtractedEvents
@@ -17,38 +18,40 @@ class EventExtractor(contextlib.AbstractContextManager):
     manager which is going to initialize it, feed it, and pass its output to
     an `ActionExecutor`."""
 
-    __NOT_INITIALIZED = 0
-    __INITIALIZED = 1
-    __PREPARED = 2
+    @unique
+    class _State(Enum):
+        NOT_INITIALIZED = 0
+        INITIALIZED = 1
+        PREPARED = 2
 
     def __init__(self):
         self._metadata = EventExtractorMetadata()
-        self._state = EventExtractor.__NOT_INITIALIZED
+        self._state = EventExtractor._State.NOT_INITIALIZED
 
     def initialize(self, environ) -> None:
-        assert self._state == EventExtractor.__NOT_INITIALIZED
+        assert self._state is EventExtractor._State.NOT_INITIALIZED
         self.initialize_impl(environ)
-        self._state = EventExtractor.__INITIALIZED
+        self._state = EventExtractor._State.INITIALIZED
 
     def __enter__(self):
         "See contextmanager.__enter__()"
-        assert self._state == EventExtractor.__INITIALIZED
+        assert self._state is EventExtractor._State.INITIALIZED
         self._metadata = self.prepare_impl()
         assert \
             isinstance(self._metadata, EventExtractorMetadata), \
             f"{self._metadata} returned by prepare_impl is not an instance" \
             " of EventExtractorMetadata"
-        self._state = EventExtractor.__PREPARED
+        self._state = EventExtractor._State.PREPARED
         return self
 
     def is_prepared(self):
-        return self._state == EventExtractor.__PREPARED
+        return self._state == EventExtractor._State.PREPARED
 
     def extract_events(
             self,
             input_scene_description: SceneDescription,
             output_extracted_events: ExtractedEvents):
-        assert self._state == EventExtractor.__PREPARED
+        assert self._state is EventExtractor._State.PREPARED
         self.extract_events_impl(
             input_scene_description, output_extracted_events)
         output_extracted_events.metadata.CopyFrom(self._metadata)

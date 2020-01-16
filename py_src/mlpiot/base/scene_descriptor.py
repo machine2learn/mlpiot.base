@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import contextlib
+from enum import Enum, unique
 
 import numpy
 
@@ -17,39 +18,41 @@ class SceneDescriptor(contextlib.AbstractContextManager):
     manager which is going to initialize it, feed it, and pass its output to
     an `EventExtractor`."""
 
-    __NOT_INITIALIZED = 0
-    __INITIALIZED = 1
-    __PREPARED = 2
+    @unique
+    class _State(Enum):
+        NOT_INITIALIZED = 0
+        INITIALIZED = 1
+        PREPARED = 2
 
     def __init__(self):
         self._metadata = SceneDescriptorMetadata()
-        self._state = SceneDescriptor.__NOT_INITIALIZED
+        self._state = SceneDescriptor._State.NOT_INITIALIZED
 
     def initialize(self, environ) -> None:
-        assert self._state == SceneDescriptor.__NOT_INITIALIZED
+        assert self._state is SceneDescriptor._State.NOT_INITIALIZED
         self.initialize_impl(environ)
-        self._state = SceneDescriptor.__INITIALIZED
+        self._state = SceneDescriptor._State.INITIALIZED
 
     def __enter__(self):
         "See contextmanager.__enter__()"
-        assert self._state == SceneDescriptor.__INITIALIZED
+        assert self._state is SceneDescriptor._State.INITIALIZED
         self._metadata = self.prepare_impl()
         assert \
             isinstance(self._metadata, SceneDescriptorMetadata), \
             f"{self._metadata} returned by prepare_impl is not an instance" \
             " of SceneDescriptorMetadata"
-        self._state = SceneDescriptor.__PREPARED
+        self._state = SceneDescriptor._State.PREPARED
         return self
 
     def is_prepared(self):
-        return self._state == SceneDescriptor.__PREPARED
+        return self._state == SceneDescriptor._State.PREPARED
 
     def describe_scene(
             self,
             input_np_image: numpy.ndarray,
             input_proto_image: Image,
             output_scene_description: SceneDescription):
-        assert self._state == SceneDescriptor.__PREPARED
+        assert self._state is SceneDescriptor._State.PREPARED
         self.describe_scene_impl(
             input_np_image, input_proto_image, output_scene_description)
         output_scene_description.metadata.CopyFrom(self._metadata)
