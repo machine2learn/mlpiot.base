@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 import contextlib
 from enum import Enum, unique
 
@@ -8,58 +8,16 @@ from mlpiot.proto.event_extraction_pb2 import ExtractedEvents
 from .internal.timestamp_utils import set_now
 
 
-class ActionExecutor(contextlib.AbstractContextManager):
-    """`ActionExecutor` is a base for the last step in the vision app pipeline,
-    which takes an `ExtractedEvents`, and performs some actions in response.
+class ActionExecutor(ABC):
+    """`ActionExecutor` is a base for the last step in a vision app pipeline.
 
-    The lifecycle of an instance of this class will be managed by a pipeline
-    manager which is going to initialize it and feed it."""
+    It takes an `ExtractedEvents`, and performs some action in response.
 
-    @unique
-    class _State(Enum):
-        NOT_INITIALIZED = 0
-        INITIALIZED = 1
-        PREPARED = 2
-
-    def __init__(self):
-        self._metadata = ActionExecutorMetadata()
-        self._state = ActionExecutor._State.NOT_INITIALIZED
-
-    def initialize(self, environ) -> None:
-        assert self._state is ActionExecutor._State.NOT_INITIALIZED
-        self.initialize_impl(environ)
-        self._state = ActionExecutor._State.INITIALIZED
-
-    def __enter__(self):
-        "See contextmanager.__enter__()"
-        assert self._state is ActionExecutor._State.INITIALIZED
-        self._metadata = self.prepare_impl()
-        assert \
-            isinstance(self._metadata, ActionExecutorMetadata), \
-            f"{self._metadata} returned by prepare_impl is not an instance" \
-            " of ActionExecutorMetadata"
-        self._state = ActionExecutor._State.PREPARED
-        return self
-
-    def is_prepared(self):
-        return self._state == ActionExecutor._State.PREPARED
-
-    def execute_action(
-            self,
-            input_extracted_events: ExtractedEvents,
-            output_action_execution: ActionExecution):
-        assert self._state is ActionExecutor._State.PREPARED
-        self.execute_action_impl(
-            input_extracted_events, output_action_execution)
-        output_action_execution.metadata.CopyFrom(self._metadata)
-        set_now(output_action_execution.timestamp)
-
-    def __exit__(self, type, value, traceback):
-        "See contextmanager.__exit__(type, value, traceback)"
-        pass
+    The lifecycle of an instance of this class will be managed by a
+    `ActionExecutorLifecycleManager`"""
 
     @abstractmethod
-    def initialize_impl(self, environ) -> None:
+    def initialize(self, environ) -> None:
         """Initializes the `ActionExecutor` using the given params.
 
         Validate the given params but if only validating is possible without
@@ -71,15 +29,20 @@ class ActionExecutor(contextlib.AbstractContextManager):
         raise NotImplementedError
 
     @abstractmethod
-    def prepare_impl(self) -> ActionExecutorMetadata:
+    def prepare_for_action_execution(
+            self,
+            output_metadata: ActionExecutorMetadata):
         """Loads the internal components and return a `ActionExecutorMetadata`
 
         Called once after the `ActionExecutor` is initialized but before
-        starting the loop which calls `extract_events`"""
+        starting the loop which calls `extract_events`
+
+        output_metadata -- to be filled
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def execute_action_impl(
+    def execute_action(
             self,
             input_extracted_events: ExtractedEvents,
             output_action_execution: ActionExecution) -> None:
@@ -92,3 +55,78 @@ class ActionExecutor(contextlib.AbstractContextManager):
         output_action_execution -- logs of the executed action
         """
         raise NotImplementedError
+
+    def release(self, type_, value, traceback) -> bool:
+        """release the resources"""
+        return False
+
+
+class ActionExecutorLifecycleManager(object):
+
+    @unique
+    class _State(Enum):
+        NOT_INITIALIZED = 0
+        INITIALIZED = 1
+        PREPARED_FOR_ACT_EXEC = 2
+        ENTERED_FOR_ACT_EXEC = 3
+        RELEASED = 99
+
+    def __init__(self, implementation: ActionExecutor):
+        assert isinstance(implementation, ActionExecutor)
+        self.implementation = implementation
+        self._metadata = ActionExecutorMetadata()
+        self._metadata.name = self.__class__.__name__
+        self._state = ActionExecutorLifecycleManager._State.NOT_INITIALIZED
+
+    def initialize(self, environ) -> None:
+        assert self._state is \
+            ActionExecutorLifecycleManager._State.NOT_INITIALIZED
+        self.implementation.initialize(environ)
+        self._state = ActionExecutorLifecycleManager._State.INITIALIZED
+
+    def release(self, type_, value, traceback) -> bool:
+        """release the resources"""
+        suppress_exception = self.implementation.release(
+            type_, value, traceback)
+        self._state = ActionExecutorLifecycleManager._State.RELEASED
+        return suppress_exception
+
+    class _PreparedForActionExecution(contextlib.AbstractContextManager):
+        def __init__(
+                self, lifecycle_manager: 'ActionExecutorLifecycleManager'):
+            self.lifecycle_manager = lifecycle_manager
+
+        def __enter__(self):
+            assert self.lifecycle_manager._state is \
+                ActionExecutorLifecycleManager._State.PREPARED_FOR_ACT_EXEC
+            self.lifecycle_manager._state = \
+                ActionExecutorLifecycleManager._State.ENTERED_FOR_ACT_EXEC
+            return self
+
+        def __exit__(self, type_, value, traceback):
+            assert self.lifecycle_manager._state is \
+                ActionExecutorLifecycleManager._State.ENTERED_FOR_ACT_EXEC
+            return self.lifecycle_manager.release(
+                type_, value, traceback)
+
+        def execute_action(
+                self,
+                input_extracted_events: ExtractedEvents,
+                output_action_execution: ActionExecution):
+            assert self.lifecycle_manager._state is \
+                ActionExecutorLifecycleManager._State.ENTERED_FOR_ACT_EXEC
+            self.lifecycle_manager.implementation.execute_action(
+                input_extracted_events, output_action_execution)
+            output_action_execution.metadata.CopyFrom(
+                self.lifecycle_manager._metadata)
+            set_now(output_action_execution.timestamp)
+
+    def prepare_for_action_execution(self):
+        assert self._state is \
+            ActionExecutorLifecycleManager._State.INITIALIZED
+        self.implementation.prepare_for_action_execution(self._metadata)
+        prepared = \
+            ActionExecutorLifecycleManager._PreparedForActionExecution(self)
+        self._state = \
+            ActionExecutorLifecycleManager._State.PREPARED_FOR_ACT_EXEC
+        return prepared
