@@ -2,15 +2,14 @@
 
 import unittest
 
-import numpy as np
-
 from mlpiot.base.action_executor import ActionExecutor
 from mlpiot.base.event_extractor import EventExtractor
 from mlpiot.base.scene_descriptor import SceneDescriptor
+from mlpiot.base.trainer import Trainer
 from mlpiot.base.vision_pipeline_manager import VisionPipelineManager
-from mlpiot.proto.image_pb2 import Image
-from mlpiot.proto.vision_pipeline_management_pb2 import \
-    VisionPipelineManagerMetadata, VisionPipelineOverview
+from mlpiot.proto import \
+    Image, ImageWithHelpers, \
+    VisionPipelineData, VisionPipelineManagerMetadata
 
 
 class DummySceneDescriptor(SceneDescriptor):
@@ -20,8 +19,7 @@ class DummySceneDescriptor(SceneDescriptor):
     def prepare_for_describing(self, output_metadata):
         pass
 
-    def describe_scene(
-            self, input_np_image, input_proto_image, output_scene_description):
+    def describe_scene(self, input_image, output_scene_description):
         pass
 
 
@@ -33,7 +31,7 @@ class DummyEventExtractor(EventExtractor):
         pass
 
     def extract_events(
-            self, input_scene_description, output_extracted_events):
+            self, input_scene_description, output_event_extraction):
         pass
 
 
@@ -45,7 +43,18 @@ class DummyActionExecutor(ActionExecutor):
         pass
 
     def execute_action(
-            self, input_extracted_events, output_action_execution):
+            self, input_event_extraction, output_action_execution):
+        pass
+
+
+class DummyTrainer(Trainer):
+    def initialize(self, environ):
+        pass
+
+    def prepare_for_training(self, output_metadata):
+        pass
+
+    def train(self, dataset):
         pass
 
 
@@ -58,23 +67,33 @@ class TestVisionPipelineManager(unittest.TestCase):
         dummy_scene_descriptor = DummySceneDescriptor()
         dummy_event_extractor = DummyEventExtractor()
         dummy_action_executor = DummyActionExecutor()
+        dummy_trainer = DummyTrainer()
 
         vision_pipeline_manager = VisionPipelineManager(
-            dummy_scene_descriptor, dummy_event_extractor,
-            [dummy_action_executor])
+            dummy_scene_descriptor,
+            dummy_event_extractor,
+            [dummy_action_executor],
+            dummy_trainer)
 
         vpmm = VisionPipelineManagerMetadata()
-        vision_pipeline_manager.initialize(
-            {}, vpmm)
+        vision_pipeline_manager.initialize({}, vpmm)
 
         with vision_pipeline_manager.\
                 prepare_for_running_pipeline() as pipeline_runner:
-            input_np_image = np.array([[[1]]])
-            input_proto_image = Image()
-            input_proto_image.cycle_id = 1001
-            input_proto_image.height = 1
-            input_proto_image.width = 1
-            input_proto_image.channels = 1
-            output_pipeline_overview = VisionPipelineOverview()
-            pipeline_runner.run_pipeline(
-                input_np_image, input_proto_image, output_pipeline_overview)
+
+            input_image_proto = Image()
+            input_image_proto.height = 1
+            input_image_proto.width = 1
+            input_image_proto.channels = 1
+            input_image = ImageWithHelpers(input_image_proto)
+
+            vision_pipeline_data = VisionPipelineData()
+            vision_pipeline_data.id = 1001
+
+            pipeline_runner.run_pipeline(input_image, vision_pipeline_data)
+
+        trainer = vision_pipeline_manager.trainer
+        trainer.initialize({})
+
+        with trainer.prepare_for_training() as ready_runner:
+            ready_runner.train([vision_pipeline_data])

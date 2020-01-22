@@ -19,13 +19,13 @@ message VisionPipelineManagerMetadata {
     string payload = 6;
 }
 
-message VisionPipelineOverview {
-    int64 cycle_id = 1;
+message VisionPipelineData {
+    int64 id = 1;
     Timestamp timestamp = 2;
     VisionPipelineManagerMetadata metadata = 3;
     Image input_image = 4;
     SceneDescription scene_description = 5;
-    ExtractedEvents extracted_events = 6;
+    EventExtraction event_extraction = 6;
     repeated ActionExecution action_executions = 7;
     repeated Event pipeline_management_events = 8;
 }

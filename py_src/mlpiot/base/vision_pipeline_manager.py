@@ -1,8 +1,6 @@
 import contextlib
 from enum import Enum, unique
-from typing import Dict, Iterable
-
-import numpy
+from typing import Dict, Iterable, Optional
 
 from mlpiot.base.action_executor import \
     ActionExecutor, ActionExecutorLifecycleManager
@@ -10,11 +8,11 @@ from mlpiot.base.event_extractor import \
     EventExtractor, EventExtractorLifecycleManager
 from mlpiot.base.scene_descriptor import \
     SceneDescriptor, SceneDescriptorLifecycleManager
-from mlpiot.proto.image_pb2 import Image
-from mlpiot.proto.vision_pipeline_management_pb2 import (
-    VisionPipelineManagerMetadata, VisionPipelineOverview
-)
-from .internal.timestamp_utils import set_now
+from mlpiot.base.trainer import \
+    Trainer, TrainerLifecycleManager
+from mlpiot.base.utils.timestamp import set_now
+from mlpiot.proto import \
+    ImageWithHelpers, VisionPipelineData, VisionPipelineManagerMetadata
 
 
 class VisionPipelineManager(object):
@@ -31,7 +29,8 @@ class VisionPipelineManager(object):
     def __init__(self,
                  scene_descriptor: SceneDescriptor,
                  event_extractor: EventExtractor,
-                 action_executors: Iterable[ActionExecutor]):
+                 action_executors: Iterable[ActionExecutor] = (),
+                 trainer: Optional[Trainer] = None):
         self.managed_scene_descriptor = \
             SceneDescriptorLifecycleManager(scene_descriptor)
 
@@ -44,6 +43,9 @@ class VisionPipelineManager(object):
             _managed_action_executors.append(
                 ActionExecutorLifecycleManager(action_executor))
         self.managed_action_executors = tuple(_managed_action_executors)
+
+        self.trainer = \
+            TrainerLifecycleManager(trainer) if trainer is not None else None
 
         self._metadata = VisionPipelineManagerMetadata()
         self._state = VisionPipelineManager._State.NOT_INITIALIZED
@@ -114,43 +116,29 @@ class VisionPipelineManager(object):
 
         def run_pipeline(
                 self,
-                input_np_image: numpy.ndarray,
-                input_proto_image: Image,
-                output_vision_pipeline_overview: VisionPipelineOverview):
-
-            output = output_vision_pipeline_overview
+                input_image: ImageWithHelpers,
+                vision_pipeline_data: VisionPipelineData):
+            """TODO: fields of vision_pipeline_data should be already filled"""
 
             assert self.pipeline_manager._state is \
                 VisionPipelineManager._State.ENTERED_FOR_RUNNING_PIPELINE
-            assert \
-                isinstance(input_np_image, numpy.ndarray), \
-                f"given {input_np_image} is not an instance of numpy.ndarray"
-            assert \
-                isinstance(input_proto_image, Image), \
-                f"given {input_proto_image} is not an instance of Image"
-            assert \
-                isinstance(output, VisionPipelineOverview), \
-                f"given {output} is not an instance of VisionPipelineOverview"
+            assert isinstance(vision_pipeline_data, VisionPipelineData)
 
-            output.cycle_id = input_proto_image.cycle_id
-            set_now(output.timestamp)
-            output.metadata.CopyFrom(self.pipeline_manager._metadata)
-            output.input_image.CopyFrom(input_proto_image)
+            set_now(vision_pipeline_data.timestamp)
+            vision_pipeline_data.metadata.CopyFrom(
+                self.pipeline_manager._metadata)
 
-            output.scene_description.cycle_id = input_proto_image.cycle_id
             self.prepared_scene_descriptor.describe_scene(
-                input_np_image, input_proto_image, output.scene_description)
-
-            output.extracted_events.cycle_id = input_proto_image.cycle_id
+                input_image,
+                vision_pipeline_data.scene_description)
             self.prepared_event_extractor.extract_events(
-                output.scene_description,
-                output.extracted_events)
-
+                vision_pipeline_data.scene_description,
+                vision_pipeline_data.event_extraction)
             for prepared_action_executor in self.prepared_action_executors:
-                action_execution = output.action_executions.add()
+                action_execution = vision_pipeline_data.action_executions.add()
                 prepared_action_executor.execute_action(
-                    output.extracted_events, action_execution)
-                action_execution.cycle_id = input_proto_image.cycle_id
+                    vision_pipeline_data.event_extraction,
+                    action_execution)
 
     def prepare_for_running_pipeline(self):
         assert self._state is \

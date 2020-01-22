@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='mlpiot.proto',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n#mlpiot/proto/event_extraction.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/event.proto\"H\n\x16\x45ventExtractorMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x0f\n\x07payload\x18\x03 \x01(\t\"\xac\x01\n\x0f\x45xtractedEvents\x12\x10\n\x08\x63ycle_id\x18\x01 \x01(\x03\x12*\n\ttimestamp\x18\x02 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x36\n\x08metadata\x18\x03 \x01(\x0b\x32$.mlpiot.proto.EventExtractorMetadata\x12#\n\x06\x65vents\x18\x04 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
+  serialized_pb=b'\n#mlpiot/proto/event_extraction.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/event.proto\"H\n\x16\x45ventExtractorMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x0f\n\x07payload\x18\x03 \x01(\t\"\x9a\x01\n\x0f\x45ventExtraction\x12*\n\ttimestamp\x18\x01 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x36\n\x08metadata\x18\x02 \x01(\x0b\x32$.mlpiot.proto.EventExtractorMetadata\x12#\n\x06\x65vents\x18\x03 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
   ,
   dependencies=[mlpiot_dot_proto_dot_google__timestamp__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_event__pb2.DESCRIPTOR,])
 
@@ -72,37 +72,30 @@ _EVENTEXTRACTORMETADATA = _descriptor.Descriptor(
 )
 
 
-_EXTRACTEDEVENTS = _descriptor.Descriptor(
-  name='ExtractedEvents',
-  full_name='mlpiot.proto.ExtractedEvents',
+_EVENTEXTRACTION = _descriptor.Descriptor(
+  name='EventExtraction',
+  full_name='mlpiot.proto.EventExtraction',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cycle_id', full_name='mlpiot.proto.ExtractedEvents.cycle_id', index=0,
-      number=1, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='mlpiot.proto.EventExtraction.timestamp', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mlpiot.proto.ExtractedEvents.timestamp', index=1,
+      name='metadata', full_name='mlpiot.proto.EventExtraction.metadata', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metadata', full_name='mlpiot.proto.ExtractedEvents.metadata', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='events', full_name='mlpiot.proto.ExtractedEvents.events', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      name='events', full_name='mlpiot.proto.EventExtraction.events', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -120,14 +113,14 @@ _EXTRACTEDEVENTS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=191,
-  serialized_end=363,
+  serialized_end=345,
 )
 
-_EXTRACTEDEVENTS.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
-_EXTRACTEDEVENTS.fields_by_name['metadata'].message_type = _EVENTEXTRACTORMETADATA
-_EXTRACTEDEVENTS.fields_by_name['events'].message_type = mlpiot_dot_proto_dot_event__pb2._EVENT
+_EVENTEXTRACTION.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
+_EVENTEXTRACTION.fields_by_name['metadata'].message_type = _EVENTEXTRACTORMETADATA
+_EVENTEXTRACTION.fields_by_name['events'].message_type = mlpiot_dot_proto_dot_event__pb2._EVENT
 DESCRIPTOR.message_types_by_name['EventExtractorMetadata'] = _EVENTEXTRACTORMETADATA
-DESCRIPTOR.message_types_by_name['ExtractedEvents'] = _EXTRACTEDEVENTS
+DESCRIPTOR.message_types_by_name['EventExtraction'] = _EVENTEXTRACTION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 EventExtractorMetadata = _reflection.GeneratedProtocolMessageType('EventExtractorMetadata', (_message.Message,), {
@@ -137,12 +130,12 @@ EventExtractorMetadata = _reflection.GeneratedProtocolMessageType('EventExtracto
   })
 _sym_db.RegisterMessage(EventExtractorMetadata)
 
-ExtractedEvents = _reflection.GeneratedProtocolMessageType('ExtractedEvents', (_message.Message,), {
-  'DESCRIPTOR' : _EXTRACTEDEVENTS,
+EventExtraction = _reflection.GeneratedProtocolMessageType('EventExtraction', (_message.Message,), {
+  'DESCRIPTOR' : _EVENTEXTRACTION,
   '__module__' : 'mlpiot.proto.event_extraction_pb2'
-  # @@protoc_insertion_point(class_scope:mlpiot.proto.ExtractedEvents)
+  # @@protoc_insertion_point(class_scope:mlpiot.proto.EventExtraction)
   })
-_sym_db.RegisterMessage(ExtractedEvents)
+_sym_db.RegisterMessage(EventExtraction)
 
 
 # @@protoc_insertion_point(module_scope)

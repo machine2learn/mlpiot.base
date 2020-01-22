@@ -5,15 +5,15 @@ package mlpiot.proto;
 import "mlpiot/proto/google_timestamp.proto";
 import "mlpiot/proto/event.proto";
 
+
 message EventExtractorMetadata {
     string name = 1;
     int32 version = 2;
     string payload = 3;
 }
 
-message ExtractedEvents {
-    int64 cycle_id = 1;
-    Timestamp timestamp = 2;
-    EventExtractorMetadata metadata = 3;
-    repeated Event events = 4;
+message EventExtraction {
+    Timestamp timestamp = 1;
+    EventExtractorMetadata metadata = 2;
+    repeated Event events = 3;
 }

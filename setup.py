@@ -43,7 +43,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'numpy>=1.16,<2',
+        # 'numpy>=1.16,<2',
         'protobuf>=3.10.0,<4'
         'setuptools>=36.2',
     ],

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package mlpiot.proto;
+
+message TrainerMetadata {
+    string name = 1;
+    int32 version = 2;
+    string payload = 3;
+}

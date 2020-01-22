@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='mlpiot.proto',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n-mlpiot/proto/vision_pipeline_management.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/action_execution.proto\x1a\x18mlpiot/proto/event.proto\x1a#mlpiot/proto/event_extraction.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/image.proto\x1a$mlpiot/proto/scene_description.proto\"\xa0\x01\n\x1dVisionPipelineManagerMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x14\n\x0c\x64\x65vice_token\x18\x03 \x01(\t\x12\x17\n\x0f\x64\x65vice_hw_model\x18\x04 \x01(\t\x12 \n\x18\x64\x65vice_hw_model_icon_url\x18\x05 \x01(\t\x12\x0f\n\x07payload\x18\x06 \x01(\t\"\xa6\x03\n\x16VisionPipelineOverview\x12\x10\n\x08\x63ycle_id\x18\x01 \x01(\x03\x12*\n\ttimestamp\x18\x02 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12=\n\x08metadata\x18\x03 \x01(\x0b\x32+.mlpiot.proto.VisionPipelineManagerMetadata\x12(\n\x0binput_image\x18\x04 \x01(\x0b\x32\x13.mlpiot.proto.Image\x12\x39\n\x11scene_description\x18\x05 \x01(\x0b\x32\x1e.mlpiot.proto.SceneDescription\x12\x37\n\x10\x65xtracted_events\x18\x06 \x01(\x0b\x32\x1d.mlpiot.proto.ExtractedEvents\x12\x38\n\x11\x61\x63tion_executions\x18\x07 \x03(\x0b\x32\x1d.mlpiot.proto.ActionExecution\x12\x37\n\x1apipeline_management_events\x18\x08 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
+  serialized_pb=b'\n-mlpiot/proto/vision_pipeline_management.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/action_execution.proto\x1a\x18mlpiot/proto/event.proto\x1a#mlpiot/proto/event_extraction.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/image.proto\x1a$mlpiot/proto/scene_description.proto\"\xa0\x01\n\x1dVisionPipelineManagerMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x14\n\x0c\x64\x65vice_token\x18\x03 \x01(\t\x12\x17\n\x0f\x64\x65vice_hw_model\x18\x04 \x01(\t\x12 \n\x18\x64\x65vice_hw_model_icon_url\x18\x05 \x01(\t\x12\x0f\n\x07payload\x18\x06 \x01(\t\"\x9c\x03\n\x12VisionPipelineData\x12\n\n\x02id\x18\x01 \x01(\x03\x12*\n\ttimestamp\x18\x02 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12=\n\x08metadata\x18\x03 \x01(\x0b\x32+.mlpiot.proto.VisionPipelineManagerMetadata\x12(\n\x0binput_image\x18\x04 \x01(\x0b\x32\x13.mlpiot.proto.Image\x12\x39\n\x11scene_description\x18\x05 \x01(\x0b\x32\x1e.mlpiot.proto.SceneDescription\x12\x37\n\x10\x65vent_extraction\x18\x06 \x01(\x0b\x32\x1d.mlpiot.proto.EventExtraction\x12\x38\n\x11\x61\x63tion_executions\x18\x07 \x03(\x0b\x32\x1d.mlpiot.proto.ActionExecution\x12\x37\n\x1apipeline_management_events\x18\x08 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
   ,
   dependencies=[mlpiot_dot_proto_dot_action__execution__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_event__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_event__extraction__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_google__timestamp__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_image__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_scene__description__pb2.DESCRIPTOR,])
 
@@ -97,64 +97,64 @@ _VISIONPIPELINEMANAGERMETADATA = _descriptor.Descriptor(
 )
 
 
-_VISIONPIPELINEOVERVIEW = _descriptor.Descriptor(
-  name='VisionPipelineOverview',
-  full_name='mlpiot.proto.VisionPipelineOverview',
+_VISIONPIPELINEDATA = _descriptor.Descriptor(
+  name='VisionPipelineData',
+  full_name='mlpiot.proto.VisionPipelineData',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cycle_id', full_name='mlpiot.proto.VisionPipelineOverview.cycle_id', index=0,
+      name='id', full_name='mlpiot.proto.VisionPipelineData.id', index=0,
       number=1, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mlpiot.proto.VisionPipelineOverview.timestamp', index=1,
+      name='timestamp', full_name='mlpiot.proto.VisionPipelineData.timestamp', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metadata', full_name='mlpiot.proto.VisionPipelineOverview.metadata', index=2,
+      name='metadata', full_name='mlpiot.proto.VisionPipelineData.metadata', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='input_image', full_name='mlpiot.proto.VisionPipelineOverview.input_image', index=3,
+      name='input_image', full_name='mlpiot.proto.VisionPipelineData.input_image', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='scene_description', full_name='mlpiot.proto.VisionPipelineOverview.scene_description', index=4,
+      name='scene_description', full_name='mlpiot.proto.VisionPipelineData.scene_description', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='extracted_events', full_name='mlpiot.proto.VisionPipelineOverview.extracted_events', index=5,
+      name='event_extraction', full_name='mlpiot.proto.VisionPipelineData.event_extraction', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='action_executions', full_name='mlpiot.proto.VisionPipelineOverview.action_executions', index=6,
+      name='action_executions', full_name='mlpiot.proto.VisionPipelineData.action_executions', index=6,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pipeline_management_events', full_name='mlpiot.proto.VisionPipelineOverview.pipeline_management_events', index=7,
+      name='pipeline_management_events', full_name='mlpiot.proto.VisionPipelineData.pipeline_management_events', index=7,
       number=8, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -173,18 +173,18 @@ _VISIONPIPELINEOVERVIEW = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=428,
-  serialized_end=850,
+  serialized_end=840,
 )
 
-_VISIONPIPELINEOVERVIEW.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
-_VISIONPIPELINEOVERVIEW.fields_by_name['metadata'].message_type = _VISIONPIPELINEMANAGERMETADATA
-_VISIONPIPELINEOVERVIEW.fields_by_name['input_image'].message_type = mlpiot_dot_proto_dot_image__pb2._IMAGE
-_VISIONPIPELINEOVERVIEW.fields_by_name['scene_description'].message_type = mlpiot_dot_proto_dot_scene__description__pb2._SCENEDESCRIPTION
-_VISIONPIPELINEOVERVIEW.fields_by_name['extracted_events'].message_type = mlpiot_dot_proto_dot_event__extraction__pb2._EXTRACTEDEVENTS
-_VISIONPIPELINEOVERVIEW.fields_by_name['action_executions'].message_type = mlpiot_dot_proto_dot_action__execution__pb2._ACTIONEXECUTION
-_VISIONPIPELINEOVERVIEW.fields_by_name['pipeline_management_events'].message_type = mlpiot_dot_proto_dot_event__pb2._EVENT
+_VISIONPIPELINEDATA.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
+_VISIONPIPELINEDATA.fields_by_name['metadata'].message_type = _VISIONPIPELINEMANAGERMETADATA
+_VISIONPIPELINEDATA.fields_by_name['input_image'].message_type = mlpiot_dot_proto_dot_image__pb2._IMAGE
+_VISIONPIPELINEDATA.fields_by_name['scene_description'].message_type = mlpiot_dot_proto_dot_scene__description__pb2._SCENEDESCRIPTION
+_VISIONPIPELINEDATA.fields_by_name['event_extraction'].message_type = mlpiot_dot_proto_dot_event__extraction__pb2._EVENTEXTRACTION
+_VISIONPIPELINEDATA.fields_by_name['action_executions'].message_type = mlpiot_dot_proto_dot_action__execution__pb2._ACTIONEXECUTION
+_VISIONPIPELINEDATA.fields_by_name['pipeline_management_events'].message_type = mlpiot_dot_proto_dot_event__pb2._EVENT
 DESCRIPTOR.message_types_by_name['VisionPipelineManagerMetadata'] = _VISIONPIPELINEMANAGERMETADATA
-DESCRIPTOR.message_types_by_name['VisionPipelineOverview'] = _VISIONPIPELINEOVERVIEW
+DESCRIPTOR.message_types_by_name['VisionPipelineData'] = _VISIONPIPELINEDATA
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 VisionPipelineManagerMetadata = _reflection.GeneratedProtocolMessageType('VisionPipelineManagerMetadata', (_message.Message,), {
@@ -194,12 +194,12 @@ VisionPipelineManagerMetadata = _reflection.GeneratedProtocolMessageType('Vision
   })
 _sym_db.RegisterMessage(VisionPipelineManagerMetadata)
 
-VisionPipelineOverview = _reflection.GeneratedProtocolMessageType('VisionPipelineOverview', (_message.Message,), {
-  'DESCRIPTOR' : _VISIONPIPELINEOVERVIEW,
+VisionPipelineData = _reflection.GeneratedProtocolMessageType('VisionPipelineData', (_message.Message,), {
+  'DESCRIPTOR' : _VISIONPIPELINEDATA,
   '__module__' : 'mlpiot.proto.vision_pipeline_management_pb2'
-  # @@protoc_insertion_point(class_scope:mlpiot.proto.VisionPipelineOverview)
+  # @@protoc_insertion_point(class_scope:mlpiot.proto.VisionPipelineData)
   })
-_sym_db.RegisterMessage(VisionPipelineOverview)
+_sym_db.RegisterMessage(VisionPipelineData)
 
 
 # @@protoc_insertion_point(module_scope)

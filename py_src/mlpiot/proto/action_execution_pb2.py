@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='mlpiot.proto',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n#mlpiot/proto/action_execution.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/event.proto\"H\n\x16\x41\x63tionExecutorMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x0f\n\x07payload\x18\x03 \x01(\t\"\xbd\x01\n\x0f\x41\x63tionExecution\x12\x10\n\x08\x63ycle_id\x18\x01 \x01(\x03\x12*\n\ttimestamp\x18\x02 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x36\n\x08metadata\x18\x03 \x01(\x0b\x32$.mlpiot.proto.ActionExecutorMetadata\x12\x34\n\x17\x61\x63tion_execution_events\x18\x04 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
+  serialized_pb=b'\n#mlpiot/proto/action_execution.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\x1a\x18mlpiot/proto/event.proto\"H\n\x16\x41\x63tionExecutorMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12\x0f\n\x07payload\x18\x03 \x01(\t\"\xab\x01\n\x0f\x41\x63tionExecution\x12*\n\ttimestamp\x18\x01 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x36\n\x08metadata\x18\x02 \x01(\x0b\x32$.mlpiot.proto.ActionExecutorMetadata\x12\x34\n\x17\x61\x63tion_execution_events\x18\x03 \x03(\x0b\x32\x13.mlpiot.proto.Eventb\x06proto3'
   ,
   dependencies=[mlpiot_dot_proto_dot_google__timestamp__pb2.DESCRIPTOR,mlpiot_dot_proto_dot_event__pb2.DESCRIPTOR,])
 
@@ -80,29 +80,22 @@ _ACTIONEXECUTION = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cycle_id', full_name='mlpiot.proto.ActionExecution.cycle_id', index=0,
-      number=1, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='mlpiot.proto.ActionExecution.timestamp', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mlpiot.proto.ActionExecution.timestamp', index=1,
+      name='metadata', full_name='mlpiot.proto.ActionExecution.metadata', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metadata', full_name='mlpiot.proto.ActionExecution.metadata', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='action_execution_events', full_name='mlpiot.proto.ActionExecution.action_execution_events', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      name='action_execution_events', full_name='mlpiot.proto.ActionExecution.action_execution_events', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -120,7 +113,7 @@ _ACTIONEXECUTION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=191,
-  serialized_end=380,
+  serialized_end=362,
 )
 
 _ACTIONEXECUTION.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP

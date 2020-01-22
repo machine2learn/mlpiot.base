@@ -3,10 +3,9 @@ import contextlib
 from enum import Enum, unique
 from typing import Dict
 
-from mlpiot.proto.event_extraction_pb2 import \
-    EventExtractorMetadata, ExtractedEvents
-from mlpiot.proto.scene_description_pb2 import SceneDescription
-from .internal.timestamp_utils import set_now
+from mlpiot.base.utils.timestamp import set_now
+from mlpiot.proto import \
+    EventExtraction, EventExtractorMetadata, SceneDescription
 
 
 class EventExtractor(ABC):
@@ -45,14 +44,14 @@ class EventExtractor(ABC):
 
     @abstractmethod
     def extract_events(
-            self,
+        self,
             input_scene_description: SceneDescription,
-            output_extracted_events: ExtractedEvents) -> None:
+            output_event_extraction: EventExtraction) -> None:
         """Fills the given `ExtractedEvents` putting events extracted from the
         given `scene_description`.
 
         input_scene_description -- a `SceneDescription` instance
-        output_extracted_events -- which will be passed to `ActionExecutor`s
+        output_event_extraction -- which will be passed to `ActionExecutor`s
         """
         raise NotImplementedError
 
@@ -112,14 +111,14 @@ class EventExtractorLifecycleManager(object):
         def extract_events(
                 self,
                 input_scene_description: SceneDescription,
-                output_extracted_events: ExtractedEvents):
+                output_event_extraction: EventExtraction) -> None:
             assert self.lifecycle_manager._state is \
                 EventExtractorLifecycleManager._State.ENTERED_FOR_EXTRACTION
             self.lifecycle_manager.implementation.extract_events(
-                input_scene_description, output_extracted_events)
-            output_extracted_events.metadata.CopyFrom(
+                input_scene_description, output_event_extraction)
+            output_event_extraction.metadata.CopyFrom(
                 self.lifecycle_manager._metadata)
-            set_now(output_extracted_events.timestamp)
+            set_now(output_event_extraction.timestamp)
 
     def prepare_for_event_extraction(self):
         assert self._state is \

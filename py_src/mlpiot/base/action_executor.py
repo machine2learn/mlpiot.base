@@ -2,16 +2,15 @@ from abc import ABC, abstractmethod
 import contextlib
 from enum import Enum, unique
 
-from mlpiot.proto.action_execution_pb2 import \
-    ActionExecution, ActionExecutorMetadata
-from mlpiot.proto.event_extraction_pb2 import ExtractedEvents
-from .internal.timestamp_utils import set_now
+from mlpiot.base.utils.timestamp import set_now
+from mlpiot.proto import \
+    ActionExecution, ActionExecutorMetadata, EventExtraction
 
 
 class ActionExecutor(ABC):
     """`ActionExecutor` is a base for the last step in a vision app pipeline.
 
-    It takes an `ExtractedEvents`, and performs some action in response.
+    It takes an `EventExtraction`, and performs some action in response.
 
     The lifecycle of an instance of this class will be managed by a
     `ActionExecutorLifecycleManager`"""
@@ -44,14 +43,14 @@ class ActionExecutor(ABC):
     @abstractmethod
     def execute_action(
             self,
-            input_extracted_events: ExtractedEvents,
+            input_event_extraction: EventExtraction,
             output_action_execution: ActionExecution) -> None:
-        """Performs an action based on the given `extracted_events`. The given
+        """Performs an action based on the given `event_extraction`. The given
         `ActionExecution` is filled which may contain events emitted through
         performing the actions. These actions are targeted to only be logged
         for debugging and troubleshooting.
 
-        input_extracted_events -- an `ExtractedEvents` instance
+        input_event_extraction -- an `EventExtraction` instance
         output_action_execution -- logs of the executed action
         """
         raise NotImplementedError
@@ -111,12 +110,12 @@ class ActionExecutorLifecycleManager(object):
 
         def execute_action(
                 self,
-                input_extracted_events: ExtractedEvents,
+                input_event_extraction: EventExtraction,
                 output_action_execution: ActionExecution):
             assert self.lifecycle_manager._state is \
                 ActionExecutorLifecycleManager._State.ENTERED_FOR_ACT_EXEC
             self.lifecycle_manager.implementation.execute_action(
-                input_extracted_events, output_action_execution)
+                input_event_extraction, output_action_execution)
             output_action_execution.metadata.CopyFrom(
                 self.lifecycle_manager._metadata)
             set_now(output_action_execution.timestamp)
