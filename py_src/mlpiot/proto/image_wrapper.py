@@ -17,5 +17,5 @@ class ImageWithHelpers(object):
         self._numpy_image = numpy_image
 
     def image_as_numpy_array(self) -> 'numpy.ndarray':
-        # TODO
+        # TODO: load from proto_image if needed
         return self._numpy_image
