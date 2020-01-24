@@ -1,21 +1,22 @@
 from typing import Optional, TYPE_CHECKING
 
-from .image_pb2 import Image
+from .image_pb2 import Image, ImageArray
 
 
-if TYPE_CHECKING:
-    import numpy
+import numpy as np
 
 
 class ImageWithHelpers(object):
 
-    def __init__(self, proto_image: Image):
+    def __init__(self, proto_image: Image, numpy_image: np.ndarray = None):
         self.proto_image = proto_image
-        self._numpy_image = None  # type: Optional[numpy.ndarray]
+        self._numpy_image = numpy_image  # type: Optional[numpy.ndarray]
 
-    def set_numpy_image(self, numpy_image: 'numpy.ndarray'):
-        self._numpy_image = numpy_image
-
-    def image_as_numpy_array(self) -> 'numpy.ndarray':
-        # TODO: load from proto_image if needed
+    def image_as_numpy_array(self) -> 'np.ndarray':
+        if self._numpy_image is None:
+            self._numpy_image = np.frombuffer(
+                self.proto_image.data, dtype=np.uint8)
+            self._numpy_image = self._numpy_image.reshape((self.proto_image.height,
+                                                           self.proto_image.width,
+                                                           self.proto_image.channels))
         return self._numpy_image

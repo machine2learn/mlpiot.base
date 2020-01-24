@@ -4,6 +4,10 @@ from google.protobuf.descriptor import (
     Descriptor as google___protobuf___descriptor___Descriptor,
 )
 
+from google.protobuf.internal.containers import (
+    RepeatedCompositeFieldContainer as google___protobuf___internal___containers___RepeatedCompositeFieldContainer,
+)
+
 from google.protobuf.message import (
     Message as google___protobuf___message___Message,
 )
@@ -13,6 +17,7 @@ from mlpiot.proto.google_timestamp_pb2 import (
 )
 
 from typing import (
+    Iterable as typing___Iterable,
     Optional as typing___Optional,
     Text as typing___Text,
 )
@@ -61,3 +66,28 @@ class Image(google___protobuf___message___Message):
         def HasField(self, field_name: typing_extensions___Literal[u"content_oneof",b"content_oneof",u"data",b"data",u"timestamp",b"timestamp",u"url",b"url"]) -> builtin___bool: ...
         def ClearField(self, field_name: typing_extensions___Literal[u"channels",b"channels",u"content_oneof",b"content_oneof",u"data",b"data",u"format",b"format",u"height",b"height",u"timestamp",b"timestamp",u"url",b"url",u"width",b"width"]) -> None: ...
     def WhichOneof(self, oneof_group: typing_extensions___Literal[u"content_oneof",b"content_oneof"]) -> typing_extensions___Literal["data","url"]: ...
+
+class ImageArray(google___protobuf___message___Message):
+    DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
+
+    @property
+    def timestamp(self) -> mlpiot___proto___google_timestamp_pb2___Timestamp: ...
+
+    @property
+    def objects(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Image]: ...
+
+    def __init__(self,
+        *,
+        timestamp : typing___Optional[mlpiot___proto___google_timestamp_pb2___Timestamp] = None,
+        objects : typing___Optional[typing___Iterable[Image]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: builtin___bytes) -> ImageArray: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    if sys.version_info >= (3,):
+        def HasField(self, field_name: typing_extensions___Literal[u"timestamp"]) -> builtin___bool: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"objects",u"timestamp"]) -> None: ...
+    else:
+        def HasField(self, field_name: typing_extensions___Literal[u"timestamp",b"timestamp"]) -> builtin___bool: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"objects",b"objects",u"timestamp",b"timestamp"]) -> None: ...

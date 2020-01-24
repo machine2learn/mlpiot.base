@@ -31,3 +31,9 @@ message SceneDescription {
     Image annotated_image = 4;
     int64 input_image_id = 5;
 }
+
+message SceneDescriptionArray {
+    Timestamp timestamp = 1;
+    SceneDescriptorMetadata metadata = 2;
+    repeated SceneDescription objects = 3;
+}
