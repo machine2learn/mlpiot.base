@@ -93,7 +93,6 @@ class TestVisionPipelineManager(unittest.TestCase):
             pipeline_runner.run_pipeline(input_image, vision_pipeline_data)
 
         trainer = vision_pipeline_manager.trainer
-        trainer.initialize({})
 
         with trainer.prepare_for_training() as ready_runner:
             ready_runner.train([vision_pipeline_data])
