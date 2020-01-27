@@ -1,5 +1,6 @@
 from glob import glob
 from os.path import join
+import pathlib
 from typing import Dict
 from xml.etree import ElementTree
 
@@ -8,8 +9,10 @@ from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 
 class DatasetParams:
     def __init__(self,
-                 keep_in_memory: bool = False):
+                 keep_in_memory: bool = False,
+                 embed_image: bool = True):
         self.keep_in_memory = keep_in_memory
+        self.embed_image = embed_image
 
 
 class DatasetFromPascalVoc(VisionPipelineDataset):
@@ -33,16 +36,30 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
         root = tree.getroot()
 
         vision_pipeline_data = VisionPipelineData()
-        # TODO: Work in progress!
-        # img_filename = root.find('filename').text
-        # img_size = root.find('size')
-        # vision_pipeline_data.
 
-        for boxes in root.iter('object'):
+        img_filename = root.find('filename').text
+        if img_filename:
+            absolute_path_string = join(self.directory_path, img_filename)
+        else:
+            absolute_path_string = root.find('path').text
+        img_size = root.find('size')
+        vision_pipeline_data.input_image.height = \
+            int(img_size.find("height").text)
+        vision_pipeline_data.input_image.width = \
+            int(img_size.find("width").text)
+        vision_pipeline_data.input_image.channels = \
+            int(img_size.find("depth").text)
 
+        if self.dataset_params.embed_image:
+            with open(absolute_path_string, 'rb') as img_file:
+                self.data = img_file.read()
+        else:
+            self.url = pathlib.Path(absolute_path_string).as_uri()
+
+        for xml_obj in root.iter('object'):
             obj = vision_pipeline_data.scene_description.objects.add()
-
-            for box in boxes.findall("bndbox"):
+            obj.class_name = xml_obj.find("name").text
+            for box in xml_obj.findall("bndbox"):
                 v = [obj.bounding_box.
                      normalized_vertices.add() for i in range(5)]
                 v[0].x = v[1].x = v[4].x = int(box.find("xmin").text)
