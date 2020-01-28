@@ -19,7 +19,7 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
     def __init__(self,
                  directory_path: str,
                  dataset_params: DatasetParams):
-        self.xml_files = glob(join(directory_path, ".xml"))
+        self.xml_files = glob(join(directory_path, "*.xml"))
         self.directory_path = directory_path
         self.dataset_params = dataset_params
         self._cache = {}  # type: Dict[int, VisionPipelineData]
