@@ -31,7 +31,7 @@ class Trainer(ABC):
     @abstractmethod
     def train(
             self,
-            dataset: VisionPipelineDataset) -> None:
+            dataset: VisionPipelineDataset, val_dataset: VisionPipelineDataset = None) -> None:
         """TODO"""
         raise NotImplementedError
 
@@ -102,10 +102,10 @@ class TrainerLifecycleManager(object):
             return self.lifecycle_manager.release(
                 type_, value, traceback)
 
-        def train(self, dataset: VisionPipelineDataset):
+        def train(self, dataset: VisionPipelineDataset, val_dataset: VisionPipelineDataset = None):
             assert self.lifecycle_manager._state is \
                 TrainerLifecycleManager._State.ENTERED_FOR_TRAINING
-            self.lifecycle_manager.implementation.train(dataset)
+            self.lifecycle_manager.implementation.train(dataset, val_dataset=val_dataset)
 
     def prepare_for_training(self):
         assert self._state is \
