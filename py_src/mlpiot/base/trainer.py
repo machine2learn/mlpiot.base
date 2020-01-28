@@ -77,6 +77,13 @@ class TrainerLifecycleManager(object):
         self._state = TrainerLifecycleManager._State.RELEASED
         return suppress_exception
 
+    def get_dataset(
+            self,
+            directory_path: str,
+            dataset_params: DatasetParams) -> VisionPipelineDataset:
+        return self.implementation.get_dataset(
+            directory_path, dataset_params)
+
     class _PreparedForTraining(contextlib.AbstractContextManager):
         def __init__(
                 self, lifecycle_manager: 'TrainerLifecycleManager'):
