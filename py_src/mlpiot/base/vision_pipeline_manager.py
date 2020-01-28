@@ -44,7 +44,7 @@ class VisionPipelineManager(object):
                 ActionExecutorLifecycleManager(action_executor))
         self.managed_action_executors = tuple(_managed_action_executors)
 
-        self.trainer = \
+        self.managed_trainer = \
             TrainerLifecycleManager(trainer) if trainer is not None else None
 
         self._metadata = VisionPipelineManagerMetadata()
@@ -67,8 +67,8 @@ class VisionPipelineManager(object):
         for managed_action_executor in self.managed_action_executors:
             managed_action_executor.initialize(environ)
 
-        if self.trainer is not None:
-            self.trainer.initialize(environ)
+        if self.managed_trainer is not None:
+            self.managed_trainer.initialize(environ)
 
         self._metadata = pipeline_manager_metadata
         self._state = VisionPipelineManager._State.INITIALIZED
