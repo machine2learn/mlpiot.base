@@ -44,6 +44,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy>=1.16,<2',
+        'opencv_python>=4.1.0',
         'protobuf>=3.10.0,<4'
         'setuptools>=36.2',
     ],

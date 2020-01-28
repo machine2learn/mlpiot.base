@@ -1,4 +1,5 @@
 from glob import glob
+import mimetypes
 from os.path import join
 import pathlib
 from typing import Dict
@@ -23,6 +24,7 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
         self.directory_path = directory_path
         self.dataset_params = dataset_params
         self._cache = {}  # type: Dict[int, VisionPipelineData]
+        mimetypes.init()
 
     def __len__(self):
         return len(self.xml_files)
@@ -50,22 +52,25 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
         vision_pipeline_data.input_image.channels = \
             int(img_size.find("depth").text)
 
+        img_type, _ = mimetypes.guess_type(img_filename)
+        if img_type:
+            vision_pipeline_data.input_image.format = img_type
+
         if self.dataset_params.embed_image:
             with open(absolute_path_string, 'rb') as img_file:
-                self.data = img_file.read()
+                vision_pipeline_data.input_image.data = img_file.read()
         else:
-            self.url = pathlib.Path(absolute_path_string).as_uri()
+            vision_pipeline_data.input_image.url = pathlib.Path(absolute_path_string).as_uri()
 
         for xml_obj in root.iter('object'):
             obj = vision_pipeline_data.scene_description.objects.add()
             obj.class_name = xml_obj.find("name").text
             for box in xml_obj.findall("bndbox"):
-                v = [obj.bounding_box.
-                     normalized_vertices.add() for i in range(5)]
+                v = [obj.bounding_box.vertices.add() for i in range(5)]
                 v[0].x = v[1].x = v[4].x = int(box.find("xmin").text)
-                v[0].y = v[2].y = v[4].y = int(box.find("ymin").text)
-                v[2].x = v[3].x = int(box.find("xmax").text)
-                v[1].y = v[3].y = int(box.find("ymax").text)
+                v[0].y = v[3].y = v[4].y = int(box.find("ymin").text)
+                v[3].x = v[2].x = int(box.find("xmax").text)
+                v[1].y = v[2].y = int(box.find("ymax").text)
                 # TODO: Merge the boxes in a better way
 
         if self.dataset_params.keep_in_memory:
