@@ -60,7 +60,8 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
             with open(absolute_path_string, 'rb') as img_file:
                 vision_pipeline_data.input_image.data = img_file.read()
         else:
-            vision_pipeline_data.input_image.url = pathlib.Path(absolute_path_string).as_uri()
+            vision_pipeline_data.input_image.url = pathlib.Path(
+                absolute_path_string).as_uri()
 
         for xml_obj in root.iter('object'):
             obj = vision_pipeline_data.scene_description.objects.add()

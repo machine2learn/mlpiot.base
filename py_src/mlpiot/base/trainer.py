@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import contextlib
 from enum import Enum, unique
-from typing import Dict
+from typing import Dict, Optional
 
 from mlpiot.base.utils.dataset import auto_detect_dataset, DatasetParams
 from mlpiot.proto import TrainerMetadata, VisionPipelineDataset
@@ -31,7 +31,8 @@ class Trainer(ABC):
     @abstractmethod
     def train(
             self,
-            dataset: VisionPipelineDataset, val_dataset: VisionPipelineDataset = None) -> None:
+            dataset: VisionPipelineDataset,
+            val_dataset: Optional[VisionPipelineDataset] = None) -> None:
         """TODO"""
         raise NotImplementedError
 
@@ -102,10 +103,12 @@ class TrainerLifecycleManager(object):
             return self.lifecycle_manager.release(
                 type_, value, traceback)
 
-        def train(self, dataset: VisionPipelineDataset, val_dataset: VisionPipelineDataset = None):
+        def train(self, dataset: VisionPipelineDataset,
+                  val_dataset: Optional[VisionPipelineDataset] = None):
             assert self.lifecycle_manager._state is \
                 TrainerLifecycleManager._State.ENTERED_FOR_TRAINING
-            self.lifecycle_manager.implementation.train(dataset, val_dataset=val_dataset)
+            self.lifecycle_manager.implementation.train(
+                dataset, val_dataset=val_dataset)
 
     def prepare_for_training(self):
         assert self._state is \

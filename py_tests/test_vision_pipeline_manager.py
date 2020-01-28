@@ -54,7 +54,7 @@ class DummyTrainer(Trainer):
     def prepare_for_training(self, output_metadata):
         pass
 
-    def train(self, dataset):
+    def train(self, dataset, val_dataset=None):
         pass
 
 
