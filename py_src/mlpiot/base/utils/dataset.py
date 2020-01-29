@@ -62,6 +62,51 @@ class BasicDataset(VisionPipelineDataset):
         return vision_pipeline_data
 
 
+class SegmentationDataset(VisionPipelineDataset):
+    def __init__(self,
+                 directory_path: str,
+                 dataset_params: DatasetParams):
+        images_path = os.path.join(directory_path, 'images')
+        masks_path = os.path.join(directory_path, 'masks')
+        assert os.path.isdir(images_path)
+        assert os.path.isdir(masks_path)
+
+        self.files = []
+        for f in os.listdir(images_path):
+            img_path = os.path.join(images_path, f)
+            mask_path = os.path.join(masks_path, f)
+            if _has_file_allowed_extension(f) and os.path.isfile(mask_path):
+                self.files.append((img_path, mask_path))
+
+        self.directory_path = directory_path
+        self.dataset_params = dataset_params
+        self._cache = {}
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, params):
+        if params in self._cache:
+            return self._cache[params]
+
+        img_filename, mask_filename = self.files[params]
+        img_proto = self._file2proto(img_filename)
+        mask_proto = self._file2proto(mask_filename)
+        if self.dataset_params.keep_in_memory:
+            self._cache[params] = (img_proto, mask_proto)
+        return img_proto, mask_proto
+
+    def _file2proto(self, filename):
+        ary = cv2.imread(filename)
+        vision_pipeline_data = VisionPipelineData()
+
+        vision_pipeline_data.input_image.height = ary.shape[0]
+        vision_pipeline_data.input_image.width = ary.shape[1]
+        vision_pipeline_data.input_image.channels = ary.shape[2]
+        vision_pipeline_data.input_image.data = np.ndarray.tobytes(ary)
+        return vision_pipeline_data
+
+
 class DatasetFromPascalVoc(VisionPipelineDataset):
     def __init__(self,
                  directory_path: str,
