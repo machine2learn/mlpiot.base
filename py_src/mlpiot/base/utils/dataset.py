@@ -1,11 +1,13 @@
-from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 from glob import glob
+import mimetypes
+import os
+
+from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 from typing import Dict
+
 from xml.etree import ElementTree
 
-import mimetypes
 import pathlib
-import os
 import cv2
 import numpy as np
 
@@ -82,7 +84,8 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
 
         img_filename = root.find('filename').text
         if img_filename:
-            absolute_path_string = os.path.join(self.directory_path, img_filename)
+            absolute_path_string = os.path.join(self.directory_path, 
+                                                img_filename)
         else:
             absolute_path_string = root.find('path').text
         img_size = root.find('size')
