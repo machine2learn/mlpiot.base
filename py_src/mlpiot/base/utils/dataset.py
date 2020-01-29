@@ -5,12 +5,16 @@ import pathlib
 from typing import Dict
 from xml.etree import ElementTree
 
-from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 import cv2
 import numpy as np
 
+from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
+
+
 _IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp',
                    '.pgm', '.tif', '.tiff', '.webp')
+
+
 def _has_file_allowed_extension(filename):
     """Checks if a file is an allowed extension.
     Args:
@@ -20,6 +24,7 @@ def _has_file_allowed_extension(filename):
         bool: True if the filename ends with one of given extensions
     """
     return filename.lower().endswith(_IMG_EXTENSIONS)
+
 
 class DatasetParams:
     def __init__(self,
@@ -82,7 +87,7 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
 
         img_filename = root.find('filename').text
         if img_filename:
-            absolute_path_string = os.path.join(self.directory_path, 
+            absolute_path_string = os.path.join(self.directory_path,
                                                 img_filename)
         else:
             absolute_path_string = root.find('path').text
