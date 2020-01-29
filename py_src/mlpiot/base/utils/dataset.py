@@ -1,12 +1,25 @@
+from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 from glob import glob
-import mimetypes
-from os.path import join
-import pathlib
 from typing import Dict
 from xml.etree import ElementTree
 
-from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
+import mimetypes
+import pathlib
+import os
+import cv2
+import numpy as np
 
+_IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp',
+                   '.pgm', '.tif', '.tiff', '.webp')
+def _has_file_allowed_extension(filename):
+    """Checks if a file is an allowed extension.
+    Args:
+        filename (string): path to a file
+        extensions (tuple of strings): extensions to consider (lowercase)
+    Returns:
+        bool: True if the filename ends with one of given extensions
+    """
+    return filename.lower().endswith(_IMG_EXTENSIONS)
 
 class DatasetParams:
     def __init__(self,
@@ -16,11 +29,39 @@ class DatasetParams:
         self.embed_image = embed_image
 
 
+class BasicDataset(VisionPipelineDataset):
+    def __init__(self,
+                 directory_path: str,
+                 dataset_params: DatasetParams):
+        self.files = [os.path.join(directory_path, f) for f in os.listdir(
+            directory_path) if _has_file_allowed_extension(f)]
+        self.directory_path = directory_path
+        self.dataset_params = dataset_params
+        self._cache = {}
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, params):
+        if params in self._cache:
+            return self._cache[params]
+        img_filename = self.files[params]
+        vision_pipeline_data = VisionPipelineData()
+        img = cv2.imread(img_filename)
+        vision_pipeline_data.input_image.height = img.shape[0]
+        vision_pipeline_data.input_image.width = img.shape[1]
+        vision_pipeline_data.input_image.channels = img.shape[2]
+        vision_pipeline_data.input_image.data = np.ndarray.tobytes(img)
+        if self.dataset_params.keep_in_memory:
+            self._cache[params] = vision_pipeline_data
+        return vision_pipeline_data
+
+
 class DatasetFromPascalVoc(VisionPipelineDataset):
     def __init__(self,
                  directory_path: str,
                  dataset_params: DatasetParams):
-        self.xml_files = glob(join(directory_path, "*.xml"))
+        self.xml_files = glob(os.path.join(directory_path, "*.xml"))
         self.directory_path = directory_path
         self.dataset_params = dataset_params
         self._cache = {}  # type: Dict[int, VisionPipelineData]
@@ -41,7 +82,7 @@ class DatasetFromPascalVoc(VisionPipelineDataset):
 
         img_filename = root.find('filename').text
         if img_filename:
-            absolute_path_string = join(self.directory_path, img_filename)
+            absolute_path_string = os.path.join(self.directory_path, img_filename)
         else:
             absolute_path_string = root.find('path').text
         img_size = root.find('size')
