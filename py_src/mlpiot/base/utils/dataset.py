@@ -1,13 +1,11 @@
 from glob import glob
 import mimetypes
 import os
-
-from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
+import pathlib
 from typing import Dict
-
 from xml.etree import ElementTree
 
-import pathlib
+from mlpiot.proto import VisionPipelineData, VisionPipelineDataset
 import cv2
 import numpy as np
 
