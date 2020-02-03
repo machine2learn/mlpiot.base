@@ -130,6 +130,7 @@ class VisionPipelineManager(object):
             set_now(vision_pipeline_data.timestamp)
             vision_pipeline_data.metadata.CopyFrom(
                 self.pipeline_manager._metadata)
+            vision_pipeline_data.input_image.CopyFrom(input_image.proto_image)
 
             self.prepared_scene_descriptor.describe_scene(
                 input_image,
