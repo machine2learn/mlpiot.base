@@ -9,8 +9,8 @@ def read(*rnames):
 
 short_desc = 'Machine Learning Platform for Internet Of Things -- Base classes'
 long_desc = \
-    read('README.rst') + '\n\n' + \
-    read('CHANGES.rst') + '\n\n' + \
+    read('README.md') + '\n\n' + \
+    read('CHANGES.md') + '\n\n' + \
     read('LICENSE')
 
 version = '0.0.1'
