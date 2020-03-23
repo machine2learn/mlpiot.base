@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='mlpiot.proto',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x18mlpiot/proto/image.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\"\xa4\x01\n\x05Image\x12*\n\ttimestamp\x18\x01 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x0e\n\x06height\x18\x02 \x01(\x05\x12\r\n\x05width\x18\x03 \x01(\x05\x12\x10\n\x08\x63hannels\x18\x04 \x01(\x05\x12\x0e\n\x06\x66ormat\x18\x05 \x01(\t\x12\x0e\n\x04\x64\x61ta\x18\x06 \x01(\x0cH\x00\x12\r\n\x03url\x18\x07 \x01(\tH\x00\x42\x0f\n\rcontent_oneof\"^\n\nImageArray\x12*\n\ttimestamp\x18\x01 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12$\n\x07objects\x18\x02 \x03(\x0b\x32\x13.mlpiot.proto.Imageb\x06proto3'
+  serialized_pb=b'\n\x18mlpiot/proto/image.proto\x12\x0cmlpiot.proto\x1a#mlpiot/proto/google_timestamp.proto\"\xa4\x01\n\x05Image\x12*\n\ttimestamp\x18\x01 \x01(\x0b\x32\x17.mlpiot.proto.Timestamp\x12\x0e\n\x06height\x18\x02 \x01(\x05\x12\r\n\x05width\x18\x03 \x01(\x05\x12\x10\n\x08\x63hannels\x18\x04 \x01(\x05\x12\x0e\n\x06\x66ormat\x18\x05 \x01(\t\x12\x0e\n\x04\x64\x61ta\x18\x06 \x01(\x0cH\x00\x12\r\n\x03url\x18\x07 \x01(\tH\x00\x42\x0f\n\rcontent_oneofb\x06proto3'
   ,
   dependencies=[mlpiot_dot_proto_dot_google__timestamp__pb2.DESCRIPTOR,])
 
@@ -101,44 +101,6 @@ _IMAGE = _descriptor.Descriptor(
   serialized_end=244,
 )
 
-
-_IMAGEARRAY = _descriptor.Descriptor(
-  name='ImageArray',
-  full_name='mlpiot.proto.ImageArray',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mlpiot.proto.ImageArray.timestamp', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objects', full_name='mlpiot.proto.ImageArray.objects', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=246,
-  serialized_end=340,
-)
-
 _IMAGE.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
 _IMAGE.oneofs_by_name['content_oneof'].fields.append(
   _IMAGE.fields_by_name['data'])
@@ -146,10 +108,7 @@ _IMAGE.fields_by_name['data'].containing_oneof = _IMAGE.oneofs_by_name['content_
 _IMAGE.oneofs_by_name['content_oneof'].fields.append(
   _IMAGE.fields_by_name['url'])
 _IMAGE.fields_by_name['url'].containing_oneof = _IMAGE.oneofs_by_name['content_oneof']
-_IMAGEARRAY.fields_by_name['timestamp'].message_type = mlpiot_dot_proto_dot_google__timestamp__pb2._TIMESTAMP
-_IMAGEARRAY.fields_by_name['objects'].message_type = _IMAGE
 DESCRIPTOR.message_types_by_name['Image'] = _IMAGE
-DESCRIPTOR.message_types_by_name['ImageArray'] = _IMAGEARRAY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Image = _reflection.GeneratedProtocolMessageType('Image', (_message.Message,), {
@@ -158,13 +117,6 @@ Image = _reflection.GeneratedProtocolMessageType('Image', (_message.Message,), {
   # @@protoc_insertion_point(class_scope:mlpiot.proto.Image)
   })
 _sym_db.RegisterMessage(Image)
-
-ImageArray = _reflection.GeneratedProtocolMessageType('ImageArray', (_message.Message,), {
-  'DESCRIPTOR' : _IMAGEARRAY,
-  '__module__' : 'mlpiot.proto.image_pb2'
-  # @@protoc_insertion_point(class_scope:mlpiot.proto.ImageArray)
-  })
-_sym_db.RegisterMessage(ImageArray)
 
 
 # @@protoc_insertion_point(module_scope)

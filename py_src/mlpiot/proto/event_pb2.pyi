@@ -14,6 +14,7 @@ from typing import (
     Optional as typing___Optional,
     Text as typing___Text,
     Tuple as typing___Tuple,
+    Union as typing___Union,
     cast as typing___cast,
 )
 
@@ -27,6 +28,9 @@ builtin___bytes = bytes
 builtin___float = float
 builtin___int = int
 builtin___str = str
+if sys.version_info < (3,):
+    builtin___buffer = buffer
+    builtin___unicode = unicode
 
 
 class Event(google___protobuf___message___Message):
@@ -68,11 +72,12 @@ class Event(google___protobuf___message___Message):
         scope : typing___Optional[typing___Text] = None,
         description : typing___Optional[typing___Text] = None,
         ) -> None: ...
-    @classmethod
-    def FromString(cls, s: builtin___bytes) -> Event: ...
+    if sys.version_info >= (3,):
+        @classmethod
+        def FromString(cls, s: builtin___bytes) -> Event: ...
+    else:
+        @classmethod
+        def FromString(cls, s: typing___Union[builtin___bytes, builtin___buffer, builtin___unicode]) -> Event: ...
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
-    if sys.version_info >= (3,):
-        def ClearField(self, field_name: typing_extensions___Literal[u"code",u"description",u"level",u"scope"]) -> None: ...
-    else:
-        def ClearField(self, field_name: typing_extensions___Literal[u"code",b"code",u"description",b"description",u"level",b"level",u"scope",b"scope"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"code",b"code",u"description",b"description",u"level",b"level",u"scope",b"scope"]) -> None: ...

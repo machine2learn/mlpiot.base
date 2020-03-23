@@ -16,8 +16,3 @@ message Image {
         string url = 7;
     }
 }
-
-message ImageArray {
-    Timestamp timestamp = 1;
-    repeated Image objects = 2;
-}
